@@ -54,17 +54,24 @@ public class SignupPage {
             alert.showAndWait();
         } else {
             // Connect to MongoDB and insert the student record
-            MongoDatabase database = MongoDBConnector.getDatabase();
-            MongoCollection<Document> studentsCollection = database.getCollection("Test");
+            try{
+                MongoDatabase database = MongoDBConnector.getDatabase();
+                MongoCollection<Document> studentsCollection = database.getCollection("Test");
 
-            Document studentDoc = new Document("name", name)
-                    .append("email", email)
-                    .append("password", password);
+                Document studentDoc = new Document("name", name)
+                        .append("email", email)
+                        .append("password", password);
 
-            studentsCollection.insertOne(studentDoc);
+                studentsCollection.insertOne(studentDoc);
 
-            // Redirect to the student dashboard after successful sign-up
-            mainApp.showStudentDashboard();
+                // Redirect to the student dashboard after successful sign-up
+                System.out.println("redirecting to the studentdash ...");
+                mainApp.showStudentDashboard();
+                System.out.println("redirected ! data added!");
+            }catch(Exception e){
+                e.printStackTrace();
+                System.out.println("error while adding data to db!");
+            }
         }
     }
 

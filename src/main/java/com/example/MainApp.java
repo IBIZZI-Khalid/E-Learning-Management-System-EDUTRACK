@@ -10,15 +10,22 @@ import javafx.stage.Stage;
 
 public class MainApp extends Application {
     private Stage primaryStage;
+    private StudentDashboard studentDashboard ;
 
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
-        // Connect to MongoDB
-        MongoDBConnector.connect("mongodb://localhost:27017");
+        try{
+            // Connect to MongoDB
+            MongoDBConnector.connect("mongodb://localhost:27017");
+            // Show Signup Page initially
+            showSignupPage();
 
-        // Show Signup Page initially
-        showSignupPage();
+        }catch(Exception e){
+            System.out.println("Error occurred while connecting to MongoDB: " + e.getMessage());
+            e.printStackTrace();
+
+        }
     }
 
     public void showSignupPage() {
@@ -30,12 +37,17 @@ public class MainApp extends Application {
     }
 
     public void showStudentDashboard() {
-        StudentDashboard dashboard = new StudentDashboard(this);
-        Scene scene = new Scene(dashboard.getView(), 400, 300);
-        primaryStage.setScene(scene);
+        // if (studentDashboard == null) {                                              // we first check if the studentDashboard instance has been created. 
+            studentDashboard = new StudentDashboard(this);                           // If not, we create a new instance and store it in the studentDashboard field.
+        // } 
+        Scene scene = new Scene(studentDashboard.getView(), 1024, 768); // We then create a new Scene with the StudentDashboard view 
+        primaryStage.setScene(scene);                                                //and set it as the primary stage's scene.
         primaryStage.setTitle("Student Dashboard");
+        primaryStage.show();
     }
-
+    
+    
+    
     public static void main(String[] args) {
         launch(args);
     }
