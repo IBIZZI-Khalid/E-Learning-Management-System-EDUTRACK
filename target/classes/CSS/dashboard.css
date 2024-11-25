@@ -1,0 +1,80 @@
+/* General Styles */
+.root {
+    -fx-font-family: "Arial, sans-serif";
+    -fx-background-color: #f4f4f9;
+    -fx-padding: 10;
+    padding: 10;
+}
+
+/* Sidebar Styling */
+.sidebar {
+    -fx-background-color: #2c3e50;
+    -fx-padding: 10;
+    -fx-spacing: 10;
+}
+
+.sidebar Button {
+    -fx-background-color: #34495e;
+    -fx-text-fill: #ecf0f1;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-border-color: #34495e;
+}
+
+.sidebar Button:hover {
+    -fx-background-color: #3b5998;
+}
+
+.sidebar .profile-name {
+    -fx-font-size: 18px;
+    -fx-text-fill: #ecf0f1;
+    -fx-font-weight: bold;
+}
+
+.sidebar .profile-email {
+    -fx-font-size: 14px;
+    -fx-text-fill: #bdc3c7;
+}
+
+/* Content Area */
+.dashboard {
+    -fx-background-color: #ffffff;
+    -fx-padding: 20;
+}
+
+/* Course Card Styling */
+.course-card {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #dcdcdc;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-padding: 10;
+    -fx-spacing: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 10, 0, 0, 2);
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+}
+
+.course-card:hover {
+    -fx-background-color: #f8f9fa;
+    -fx-border-color: #bdc3c7;
+}
+
+.course-card .course-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+.course-card .course-description {
+    -fx-font-size: 14px;
+    -fx-text-fill: #7f8c8d;
+}
+
+.course-card .course-progress {
+    -fx-font-size: 12px;
+    -fx-text-fill: #3498db;
+}

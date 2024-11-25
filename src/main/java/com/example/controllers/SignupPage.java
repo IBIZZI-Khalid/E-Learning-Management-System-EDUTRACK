@@ -8,6 +8,7 @@ import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
@@ -35,16 +36,22 @@ public class SignupPage {
         PasswordField confirmPasswordField = new PasswordField();
         confirmPasswordField.setPromptText("Confirm Password");
 
+        // making a choice (student or teacher) :
+        ComboBox<String> roleComboBox = new ComboBox<>();
+        roleComboBox.getItems().addAll("Student", "Teacher");
+        roleComboBox.setPromptText("Select Role");
+
         Button signupButton = new Button("Sign Up");
         signupButton.setOnAction(e -> handleSignup(nameField.getText(), emailField.getText(), passwordField.getText(),
-                confirmPasswordField.getText()));
+                confirmPasswordField.getText(), roleComboBox.getValue()));
 
         view = new VBox(10);
         view.setPadding(new Insets(10));
-        view.getChildren().addAll(nameField, emailField, passwordField, confirmPasswordField, signupButton);
+        view.getChildren().addAll(nameField, emailField, passwordField, confirmPasswordField, roleComboBox,
+                signupButton);
     }
 
-    private void handleSignup(String name, String email, String password, String confirmPassword) {
+    private void handleSignup(String name, String email, String password, String confirmPassword, String role) {
         if (!password.equals(confirmPassword)) {
             // Show error alert if passwords do not match
             Alert alert = new Alert(AlertType.ERROR);
@@ -54,21 +61,44 @@ public class SignupPage {
             alert.showAndWait();
         } else {
             // Connect to MongoDB and insert the student record
-            try{
+            try {
                 MongoDatabase database = MongoDBConnector.getDatabase();
-                MongoCollection<Document> studentsCollection = database.getCollection("Test");
+                if ("Student".equals(role)) {
+                    MongoCollection<Document> studentsCollection = database.getCollection("students");
 
-                Document studentDoc = new Document("name", name)
-                        .append("email", email)
-                        .append("password", password);
+                    Document studentDoc = new Document("name", name)
+                            .append("email", email)
+                            .append("password", password);
 
-                studentsCollection.insertOne(studentDoc);
+                    studentsCollection.insertOne(studentDoc);
 
-                // Redirect to the student dashboard after successful sign-up
-                System.out.println("redirecting to the studentdash ...");
-                mainApp.showStudentDashboard();
-                System.out.println("redirected ! data added!");
-            }catch(Exception e){
+                    // goin in to the db again to get the student's id
+                    Document insertedStudent = studentsCollection.find(new Document("email", email)).first();
+                    if (insertedStudent != null) {
+                        String studentId = insertedStudent.getObjectId("_id").toHexString();
+
+                        // Redirect to the student dashboard
+                        System.out.println("Redirecting to the student dashboard...");
+                        mainApp.showStudentDashboard(studentId);
+                        System.out.println("Redirected! Data added!");
+                    }
+
+                } else if ("Teacher".equals(role)) {
+                    MongoCollection<Document> teachersCollection = database.getCollection("teachers");
+
+                    Document teacherDoc = new Document("name", name)
+                            .append("email", email)
+                            .append("password", password);
+
+                    teachersCollection.insertOne(teacherDoc);
+
+                    // Redirect to the student dashboard after successful sign-up
+                    System.out.println("redirecting to the teachersdash ...");
+                    mainApp.showTeacherDashboard(email);
+                    System.out.println("redirected ! data added!");
+
+                }
+            } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("error while adding data to db!");
             }

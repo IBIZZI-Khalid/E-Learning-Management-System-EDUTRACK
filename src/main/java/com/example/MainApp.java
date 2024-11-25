@@ -2,7 +2,11 @@ package com.example;
 
 import com.example.controllers.MongoDBConnector;
 import com.example.controllers.SignupPage;
+// import com.example.controllers.;
+import com.example.controllers.LoginPage;
 import com.example.controllers.StudentDashboard;
+import com.example.controllers.TeacherDashboard;
+import com.mongodb.client.MongoDatabase;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -10,18 +14,21 @@ import javafx.stage.Stage;
 
 public class MainApp extends Application {
     private Stage primaryStage;
-    private StudentDashboard studentDashboard ;
+    private StudentDashboard studentDashboard;
+    private TeacherDashboard teacherDashboard;
+    private MongoDatabase mongoDatabase;
 
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
-        try{
+        try {
             // Connect to MongoDB
-            MongoDBConnector.connect("mongodb://localhost:27017");
+            mongoDatabase = MongoDBConnector.connect("mongodb://localhost:27017");
             // Show Signup Page initially
-            showSignupPage();
+            showLoginPage();
+            // showSignupPage();
 
-        }catch(Exception e){
+        } catch (Exception e) {
             System.out.println("Error occurred while connecting to MongoDB: " + e.getMessage());
             e.printStackTrace();
 
@@ -36,18 +43,39 @@ public class MainApp extends Application {
         primaryStage.show();
     }
 
-    public void showStudentDashboard() {
-        // if (studentDashboard == null) {                                              // we first check if the studentDashboard instance has been created. 
-            studentDashboard = new StudentDashboard(this);                           // If not, we create a new instance and store it in the studentDashboard field.
-        // } 
-        Scene scene = new Scene(studentDashboard.getView(), 1024, 768); // We then create a new Scene with the StudentDashboard view 
-        primaryStage.setScene(scene);                                                //and set it as the primary stage's scene.
+    public void showLoginPage() {
+        LoginPage loginpage = new LoginPage(this);
+        Scene scene = new Scene(loginpage.getView(), 400, 300);
+        primaryStage.setScene(scene);
+        primaryStage.setTitle("Login");
+        primaryStage.show();
+    }
+
+    public void showStudentDashboard(String studentId) {
+        StudentDashboard studentDashboard = new StudentDashboard(
+            this,
+            mongoDatabase,  // Your MongoDB database instance
+            studentId
+        );        
+        Scene scene = new Scene(studentDashboard.getView(), 1024, 768);
+        primaryStage.setScene(scene);
         primaryStage.setTitle("Student Dashboard");
         primaryStage.show();
     }
-    
-    
-    
+
+    public void showTeacherDashboard(String teacherEmail) {
+        teacherDashboard = new TeacherDashboard(
+            this, 
+            mongoDatabase, 
+            teacherEmail
+        );
+        Scene scene = new Scene(teacherDashboard.getView(), 1024, 768);
+        primaryStage.setScene(scene);
+        primaryStage.setTitle("Teacher Dashboard");
+        primaryStage.show();
+
+    }
+
     public static void main(String[] args) {
         launch(args);
     }

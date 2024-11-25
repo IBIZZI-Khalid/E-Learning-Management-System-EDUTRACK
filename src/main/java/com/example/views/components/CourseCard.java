@@ -1,5 +1,5 @@
 package com.example.views.components;
-import com.example.models.Course;
+// import com.example.models.Course;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;

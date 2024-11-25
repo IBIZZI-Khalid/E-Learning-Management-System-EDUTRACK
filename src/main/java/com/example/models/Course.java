@@ -5,9 +5,11 @@ public class Course {
     private String title;
     private String description;
     private double progressPercentage;
+    private String teacherEmail ;
 
-    public Course(String title, String description, double progressPercentage) {
-        this.id = java.util.UUID.randomUUID().toString();
+
+    public Course(String id ,String title, String description, double progressPercentage) {
+        this.id = id;
         this.title = title;
         this.description = description;
         this.progressPercentage = progressPercentage;
@@ -40,5 +42,11 @@ public class Course {
 
     public void setProgressPercentage(double progressPercentage) {
         this.progressPercentage = progressPercentage;
+    }
+    public String getTeacherEmail() {
+        return teacherEmail;
+    }
+    public void setTeacherEmail(String teacherEmail) {
+        this.teacherEmail = teacherEmail;
     }
 }

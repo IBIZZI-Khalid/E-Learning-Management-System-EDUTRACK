@@ -2,10 +2,14 @@ package com.example.controllers;
 
 import java.util.List;
 
+import org.bson.Document;
+
 import com.example.MainApp;
 import com.example.models.Course;
 import com.example.services.CourseService;
 import com.example.views.components.CourseCard;
+import com.mongodb.client.MongoDatabase;
+
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
@@ -13,19 +17,27 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 public class StudentDashboard {
-
+    
     private MainApp mainApp;
-
+    private final String studentId;  // Store student ID
     private BorderPane view;
     private VBox sidebar;
     private StackPane contentArea;
     private CourseService courseService;
 
-    public StudentDashboard(MainApp mainApp) {
+    
+    public StudentDashboard(MainApp mainApp, MongoDatabase database, String studentId) {
+        if(database == null){
+            throw new IllegalArgumentException("Database connection is required error in StudentDashboard line31");
+        }
         this.mainApp = mainApp;
-        this.courseService = new CourseService();
+        this.studentId = studentId;
+        this.courseService = new CourseService(database);
         createView();
     }
+
+
+
 
     private void createView() {
         view = new BorderPane();
@@ -38,6 +50,7 @@ public class StudentDashboard {
         applyStyling();
         showCoursesView();
     }
+
 
     private VBox createSidebar() {
         VBox sidebar = new VBox(10);
@@ -57,49 +70,82 @@ public class StudentDashboard {
         chatsBtn.setOnAction(e -> showChatsView());
 
         sidebar.getChildren().addAll(
-                createUserProfile(),
-                new Separator(),
-                coursesBtn,
-                progressBtn,
-                chatsBtn);
+            createUserProfile(),
+            new Separator(),
+            coursesBtn,
+            progressBtn,
+            chatsBtn
+        );
 
         return sidebar;
     }
 
+
     private VBox createUserProfile() {
         VBox profile = new VBox(5);
-        Label nameLabel = new Label("[Student Name]");
-        Label emailLabel = new Label("[student@example.com]");
+        try{
+            // fetching the user's data 
+            Document studentData = courseService.getStudentDetails(studentId);
+            String name = studentData.getString("name");
+            String email = studentData.getString("email");
 
-        nameLabel.getStyleClass().add("profile-name");
-        emailLabel.getStyleClass().add("profile-email");
+            Label nameLabel = new Label(name);
+            Label emailLabel = new Label(email);
 
-        profile.getChildren().addAll(nameLabel, emailLabel);
+            nameLabel.getStyleClass().add("profile-name");
+            emailLabel.getStyleClass().add("profile-email");
+
+            profile.getChildren().addAll(nameLabel, emailLabel);
+        }catch(RuntimeException e) {
+            showError("Error loading profile", e.getMessage());
+        }
+        
         return profile;
     }
+
+
 
     private void showCoursesView() {
         VBox coursesView = new VBox(10);
         coursesView.setPadding(new Insets(20));
 
-        List<Course> courses = courseService.getEnrolledCourses();
-        for (Course course : courses) {
-            coursesView.getChildren().add(createCourseCard(
-                    course.getTitle(),
-                    course.getDescription(),
-                    course.getProgressPercentage()));
-        }
+        try {
+            List<Course> courses = courseService.getEnrolledCourses(studentId);
+            if (courses.isEmpty()) {
+                Label noCoursesLabel = new Label("You are not enrolled in any courses yet.");
+                coursesView.getChildren().add(noCoursesLabel);
+            } else {
+                for (Course course : courses) {
+                    coursesView.getChildren().add(createCourseCard(
+                        course.getTitle(),
+                        course.getDescription(),
+                        course.getProgressPercentage()
+                    ));
+                }
+            }
 
-        contentArea.getChildren().clear();
-        contentArea.getChildren().add(new ScrollPane(coursesView));
+            contentArea.getChildren().clear();
+            contentArea.getChildren().add(new ScrollPane(coursesView));
+        } catch (RuntimeException e) {
+            showError("Error loading courses", e.getMessage());
+        }
     }
 
+    private void showError(String title, String content) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
+    
     private CourseCard createCourseCard(String title, String description, double progress) {
         return new CourseCard(title, description, progress);
     }
     // private void createView() {
-    // view = new VBox(10);
-    // view.setPadding(new Insets(10));
+    //     view = new VBox(10);
+    //     view.setPadding(new Insets(10));
+
+    
 
     private void showProgressView() {
         // Implement logic to show student's progress
@@ -114,7 +160,7 @@ public class StudentDashboard {
         sidebar.getStyleClass().add("sidebar");
 
         // Add CSS
-        // view.getStylesheets().add(getClass().getResource("/css/dashboard.css").toExternalForm());
+        view.getStylesheets().add(getClass().getResource("/css/dashboard.css").toExternalForm());
     }
 
     public BorderPane getView() {
