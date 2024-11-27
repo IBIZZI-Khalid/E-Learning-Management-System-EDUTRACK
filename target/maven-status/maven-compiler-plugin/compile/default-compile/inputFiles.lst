@@ -1,11 +1,13 @@
 C:\Users\hp\YouTubeScraper\src\main\java\com\example\controllers\SignupPage.java
 C:\Users\hp\YouTubeScraper\src\main\java\com\example\MainApp.java
+C:\Users\hp\YouTubeScraper\src\main\java\com\example\services\AnnouncementService.java
+C:\Users\hp\YouTubeScraper\src\main\java\com\example\services\CourseService.java
+C:\Users\hp\YouTubeScraper\src\main\java\com\example\views\components\CourseCard.java
+C:\Users\hp\YouTubeScraper\src\main\java\com\example\models\Course.java
 C:\Users\hp\YouTubeScraper\src\main\java\com\example\models\Student.java
 C:\Users\hp\YouTubeScraper\src\main\java\com\example\controllers\TeacherDashboard.java
-C:\Users\hp\YouTubeScraper\src\main\java\com\example\services\CourseService.java
 C:\Users\hp\YouTubeScraper\src\main\java\com\example\controllers\StudentDashboard.java
+C:\Users\hp\YouTubeScraper\src\main\java\com\example\models\Announcement.java
 C:\Users\hp\YouTubeScraper\src\main\java\com\example\controllers\MongoDBConnector.java
 C:\Users\hp\YouTubeScraper\src\main\java\com\example\YouTubeScraper.java
 C:\Users\hp\YouTubeScraper\src\main\java\com\example\controllers\LoginPage.java
-C:\Users\hp\YouTubeScraper\src\main\java\com\example\views\components\CourseCard.java
-C:\Users\hp\YouTubeScraper\src\main\java\com\example\models\Course.java

@@ -17,13 +17,11 @@ public class CourseService {
     private final MongoCollection<Document> courseCollection;
     private final MongoCollection<Document> studentCollection;
     private final MongoCollection<Document> teacherCollection;
-    private final MongoCollection<Document> announcementCollection;
 
     public CourseService(MongoDatabase database) {
         this.courseCollection = database.getCollection("courses");
         this.studentCollection = database.getCollection("students");
         this.teacherCollection = database.getCollection("teachers");
-        this.announcementCollection = database.getCollection("announcements");
     }
 
     // Fetch courses created by a teacher
@@ -94,13 +92,7 @@ public class CourseService {
     }
 
     // Post an announcement
-    public void postAnnouncement(String announcement, String teacherEmail) {
-        Document announcementDoc = new Document()
-                .append("announcement", announcement)
-                .append("teacherEmail", teacherEmail)
-                .append("timestamp", System.currentTimeMillis());
-        announcementCollection.insertOne(announcementDoc);
-    }
+    
 
     public List<Course> getEnrolledCourses(String studentId) {
         List<Course> courses = new ArrayList<>();

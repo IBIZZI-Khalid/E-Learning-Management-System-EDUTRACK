@@ -3,6 +3,7 @@ package com.example.controllers;
 import com.example.MainApp;
 import com.example.models.Course;
 import com.example.models.Student;
+import com.example.services.AnnouncementService;
 import com.example.services.CourseService;
 import com.example.views.components.CourseCard;
 import com.mongodb.client.MongoDatabase;
@@ -25,11 +26,13 @@ public class TeacherDashboard {
     private VBox sidebar;
     private StackPane contentArea;
     private CourseService courseService;
+    private AnnouncementService announcementService;
 
     public TeacherDashboard(MainApp mainApp, MongoDatabase database, String teacherEmail) {
         this.mainApp = mainApp;
         this.teacherEmail = teacherEmail;
         this.courseService = new CourseService(database);
+        this.announcementService = new AnnouncementService(database);
         createView();
     }
 
@@ -63,32 +66,31 @@ public class TeacherDashboard {
         announcementsBtn.setOnAction(e -> showAnnouncementsView());
 
         sidebar.getChildren().addAll(
-            createUserProfile(),
-            new Separator(),
-            coursesBtn,
-            manageStudentsBtn,
-            announcementsBtn
-        );
+                createUserProfile(),
+                new Separator(),
+                coursesBtn,
+                manageStudentsBtn,
+                announcementsBtn);
 
         return sidebar;
     }
 
     private VBox createUserProfile() {
         VBox profile = new VBox(5);
-        try{
+        try {
             Document teacherData = courseService.getTeacherDetails(teacherEmail);
             String name = teacherData.getString("name");
             String email = teacherData.getString("email");
 
             Label nameLabel = new Label(name);
             Label emailLabel = new Label(email);
-    
+
             nameLabel.getStyleClass().add("profile-name");
             emailLabel.getStyleClass().add("profile-email");
-    
+
             profile.getChildren().addAll(nameLabel, emailLabel);
 
-        }catch(RuntimeException e) {
+        } catch (RuntimeException e) {
             showError("Error loading profile", e.getMessage());
         }
         return profile;
@@ -97,15 +99,14 @@ public class TeacherDashboard {
     private void showCoursesView() {
         VBox coursesView = new VBox(10);
         coursesView.setPadding(new Insets(20));
-        try{
-            List<Course> courses = courseService.getCoursesByTeacher(teacherEmail); 
+        try {
+            List<Course> courses = courseService.getCoursesByTeacher(teacherEmail);
             // Fetch courses created by this teacher
             for (Course course : courses) {
                 coursesView.getChildren().add(createCourseCard(
-                    course.getTitle(),
-                    course.getDescription(),
-                    course.getProgressPercentage()
-                ));
+                        course.getTitle(),
+                        course.getDescription(),
+                        course.getProgressPercentage()));
             }
 
             Button createCourseBtn = new Button("Create New Course");
@@ -132,10 +133,10 @@ public class TeacherDashboard {
             for (Student student : students) {
                 VBox studentCard = new VBox(5);
                 studentCard.getStyleClass().add("student-card");
-                
+
                 Label nameLabel = new Label("Name: " + student.getName());
                 Label emailLabel = new Label("Email: " + student.getEmail());
-                
+
                 studentCard.getChildren().addAll(nameLabel, emailLabel);
                 studentsView.getChildren().add(studentCard);
             }
@@ -143,11 +144,10 @@ public class TeacherDashboard {
             contentArea.getChildren().clear();
             contentArea.getChildren().add(new ScrollPane(studentsView));
         } catch (RuntimeException e) {
-            System.out.println("Error loading students"+ e.getMessage());
+            System.out.println("Error loading students" + e.getMessage());
         }
     }
 
-    
     private void showCreateCourseView() {
         VBox createCourseView = new VBox(10);
         createCourseView.setPadding(new Insets(20));
@@ -163,7 +163,7 @@ public class TeacherDashboard {
             try {
                 String title = titleField.getText();
                 String description = descriptionField.getText();
-                
+
                 if (title.isEmpty() || description.isEmpty()) {
                     showError("Validation Error", "Title and description are required");
                     return;
@@ -178,20 +178,21 @@ public class TeacherDashboard {
         });
 
         createCourseView.getChildren().addAll(
-            new Label("Create New Course"),
-            titleField,
-            descriptionField,
-            saveBtn
-        );
+                new Label("Create New Course"),
+                titleField,
+                descriptionField,
+                saveBtn);
 
         contentArea.getChildren().clear();
         contentArea.getChildren().add(createCourseView);
     }
 
-    
     private void showAnnouncementsView() {
         VBox announcementsView = new VBox(10);
         announcementsView.setPadding(new Insets(20));
+
+        TextArea announcementTitlefield = new TextArea();
+        announcementTitlefield.setPromptText("Your announcement Title here ...");
 
         TextArea announcementField = new TextArea();
         announcementField.setPromptText("Write your announcement here...");
@@ -199,15 +200,19 @@ public class TeacherDashboard {
         Button postBtn = new Button("Post Announcement");
         postBtn.setOnAction(e -> {
             try {
+                String aTitle = announcementTitlefield.getText();
                 String announcement = announcementField.getText();
+
                 if (announcement.isEmpty()) {
                     showError("Validation Error", "Announcement text is required");
                     return;
                 }
                 
-                courseService.postAnnouncement(announcement, teacherEmail);
+                announcementService.postAnnouncement(aTitle , announcement, teacherEmail);
                 showSuccess("Success", "Announcement posted successfully");
                 announcementField.clear();
+                announcementTitlefield.clear();
+
             } catch (RuntimeException ex) {
                 showError("Error posting announcement", ex.getMessage());
             }
@@ -216,6 +221,7 @@ public class TeacherDashboard {
         announcementsView.getChildren().addAll(
             new Label("Post Announcements"),
             announcementField,
+            announcementTitlefield,
             postBtn
         );
 
@@ -234,18 +240,19 @@ public class TeacherDashboard {
     public BorderPane getView() {
         return view;
     }
-// Helper methods for showing dialogs
-private void showError(String title, String content) {
-    Alert alert = new Alert(Alert.AlertType.ERROR);
-    alert.setTitle(title);
-    alert.setContentText(content);
-    alert.showAndWait();
-}
 
-private void showSuccess(String title, String content) {
-    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-    alert.setTitle(title);
-    alert.setContentText(content);
-    alert.showAndWait();
-}
+    // Helper methods for showing dialogs
+    private void showError(String title, String content) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
+
+    private void showSuccess(String title, String content) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
 }

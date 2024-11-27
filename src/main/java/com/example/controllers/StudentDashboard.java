@@ -1,11 +1,14 @@
 package com.example.controllers;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.bson.Document;
 
 import com.example.MainApp;
+import com.example.models.Announcement;
 import com.example.models.Course;
+import com.example.services.AnnouncementService;
 import com.example.services.CourseService;
 import com.example.views.components.CourseCard;
 import com.mongodb.client.MongoDatabase;
@@ -24,6 +27,7 @@ public class StudentDashboard {
     private VBox sidebar;
     private StackPane contentArea;
     private CourseService courseService;
+    private AnnouncementService announcementService;
 
     
     public StudentDashboard(MainApp mainApp, MongoDatabase database, String studentId) {
@@ -33,6 +37,7 @@ public class StudentDashboard {
         this.mainApp = mainApp;
         this.studentId = studentId;
         this.courseService = new CourseService(database);
+        this.announcementService = new AnnouncementService(database);
         createView();
     }
 
@@ -60,21 +65,26 @@ public class StudentDashboard {
         Button coursesBtn = new Button("My Courses");
         Button progressBtn = new Button("My Progress");
         Button chatsBtn = new Button("Chats");
+        Button announcementsBtn = new Button("Announcements");
 
         coursesBtn.setMaxWidth(Double.MAX_VALUE);
         progressBtn.setMaxWidth(Double.MAX_VALUE);
         chatsBtn.setMaxWidth(Double.MAX_VALUE);
+        announcementsBtn.setMaxWidth(Double.MAX_VALUE);
 
         coursesBtn.setOnAction(e -> showCoursesView());
         progressBtn.setOnAction(e -> showProgressView());
         chatsBtn.setOnAction(e -> showChatsView());
+        announcementsBtn.setOnAction(e -> showAnnouncementsView()); // Add action
+
 
         sidebar.getChildren().addAll(
             createUserProfile(),
             new Separator(),
             coursesBtn,
             progressBtn,
-            chatsBtn
+            chatsBtn,
+            announcementsBtn
         );
 
         return sidebar;
@@ -86,8 +96,12 @@ public class StudentDashboard {
         try{
             // fetching the user's data 
             Document studentData = courseService.getStudentDetails(studentId);
+            
+
             String name = studentData.getString("name");
             String email = studentData.getString("email");
+            
+            // Displaying the user's data in labels
 
             Label nameLabel = new Label(name);
             Label emailLabel = new Label(email);
@@ -104,10 +118,10 @@ public class StudentDashboard {
     }
 
 
-
     private void showCoursesView() {
         VBox coursesView = new VBox(10);
         coursesView.setPadding(new Insets(20));
+        
 
         try {
             List<Course> courses = courseService.getEnrolledCourses(studentId);
@@ -131,6 +145,60 @@ public class StudentDashboard {
         }
     }
 
+// Inside StudentDashboard.java
+    private void showAnnouncementsView() {
+        VBox announcementsView = new VBox(10);
+        announcementsView.setPadding(new Insets(20));
+
+        try {
+            List<Announcement> announcements = announcementService.getAllAnnouncements();
+            // Fetch both general and course-specific announcements
+                // List<Announcement> generalAnnouncements = announcementService.getGeneralAnnouncements();
+                // List<Announcement> courseAnnouncements = announcementService.getAnnouncementsByCourse(studentId);
+
+                // // Combine announcements
+                // List<Announcement> allAnnouncements = new ArrayList<>();
+                // allAnnouncements.addAll(generalAnnouncements);
+                // allAnnouncements.addAll(courseAnnouncements);    
+            
+            if (announcements.isEmpty()) {
+                Label noAnnouncementsLabel = new Label("No announcements at the moment.");
+                announcementsView.getChildren().add(noAnnouncementsLabel);
+            } else {
+                for (Announcement announcement : announcements) {
+                    VBox announcementCard = new VBox(5);
+                    announcementCard.getStyleClass().add("announcement-card");
+
+                    Label titleLabel = new Label(announcement.getTitle());
+                    titleLabel.setStyle("-fx-font-weight: bold;");
+
+                    Label contentLabel = new Label(announcement.getContent());
+                    Label teacherLabel = new Label("Posted by: " + announcement.getTeacherEmail());
+                    Label timestampLabel = new Label("Posted on: " + 
+                        new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(
+                            new java.util.Date(announcement.getTimestamp())
+                        )
+                    );
+
+                    announcementCard.getChildren().addAll(
+                            titleLabel, 
+                            contentLabel, 
+                            teacherLabel, 
+                            timestampLabel
+                        );
+                        announcementsView.getChildren().add(announcementCard);
+                }
+            }
+            ScrollPane scrollPane = new ScrollPane(announcementsView);
+            scrollPane.setFitToWidth(true);
+
+            contentArea.getChildren().clear();
+            contentArea.getChildren().add(new ScrollPane(announcementsView));
+        } catch (RuntimeException e) {
+            showError("Error loading announcements", e.getMessage());
+        }
+    }
+
     private void showError(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
@@ -141,11 +209,6 @@ public class StudentDashboard {
     private CourseCard createCourseCard(String title, String description, double progress) {
         return new CourseCard(title, description, progress);
     }
-    // private void createView() {
-    //     view = new VBox(10);
-    //     view.setPadding(new Insets(10));
-
-    
 
     private void showProgressView() {
         // Implement logic to show student's progress
