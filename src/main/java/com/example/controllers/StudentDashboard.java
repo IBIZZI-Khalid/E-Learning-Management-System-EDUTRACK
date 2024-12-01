@@ -16,6 +16,7 @@ import com.mongodb.client.MongoDatabase;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
@@ -62,18 +63,19 @@ public class StudentDashboard {
         sidebar.setPadding(new Insets(10));
         sidebar.setPrefWidth(200);
 
+        Button welcomeBtn = new Button("Welcome");
         Button coursesBtn = new Button("My Courses");
         Button progressBtn = new Button("My Progress");
         Button chatsBtn = new Button("Chats");
         Button announcementsBtn = new Button("Announcements");
-        // Button logoutBtn = new Button("Logout");
-        Button welcomeBtn = new Button("Welcome");
+        Button logoutBtn = new Button("Logout");
 
         coursesBtn.setMaxWidth(Double.MAX_VALUE);
         progressBtn.setMaxWidth(Double.MAX_VALUE);
         chatsBtn.setMaxWidth(Double.MAX_VALUE);
         announcementsBtn.setMaxWidth(Double.MAX_VALUE);
         welcomeBtn.setMaxWidth(Double.MAX_VALUE);
+        logoutBtn.setMaxWidth(Double.MAX_VALUE);
 
 
         coursesBtn.setOnAction(e -> showCoursesView());
@@ -81,6 +83,7 @@ public class StudentDashboard {
         chatsBtn.setOnAction(e -> showChatsView());
         announcementsBtn.setOnAction(e -> showAnnouncementsView()); // Add action
         welcomeBtn.setOnAction(e -> showWelcomeView()); // Add action
+        logoutBtn.setOnAction(e -> new LogOut(mainApp).execute());
 
 
         sidebar.getChildren().addAll(
@@ -90,7 +93,8 @@ public class StudentDashboard {
             progressBtn,
             chatsBtn,
             announcementsBtn,
-            welcomeBtn
+            welcomeBtn,
+            logoutBtn
         );
 
         return sidebar;
@@ -99,41 +103,66 @@ public class StudentDashboard {
     private void showWelcomeView() {
         VBox welcomeView = new VBox(20);
         welcomeView.setPadding(new Insets(20));
+        welcomeView.getStyleClass().add("welcome-container");  // Add container style
+
     
         try {
             // Recent Courses Section
             Label recentCoursesTitle = new Label("Your Recent Courses");
             recentCoursesTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+            recentCoursesTitle.getStyleClass().add("welcome-header-text");
+
     
             List<Course> courses = courseService.getCoursesForStudent(studentId);
-            VBox coursesSection = new VBox(10);
+            HBox coursesSection = new HBox(10);
+            coursesSection.getStyleClass().add("welcome-insights-section");
+
             
             if (courses.isEmpty()) {
-                coursesSection.getChildren().add(new Label("You are not enrolled in any courses yet."));
+                Label noCoursesLabel = new Label("You are not enrolled in any courses yet.");
+                coursesSection.getChildren().add(noCoursesLabel);
             } else {
                 // Sort courses by progress (descending) or last accessed
                 courses.sort((c1, c2) -> Double.compare(c2.getProgressPercentage(), c1.getProgressPercentage()));
                 
                 for (Course course : courses.subList(0, Math.min(3, courses.size()))) {
                     VBox courseCard = new VBox(5);
-                    courseCard.getStyleClass().add("welcome-course-card");
+                    courseCard.getStyleClass().add("welcome-card");
     
                     Label courseTitle = new Label(course.getTitle());
-                    courseTitle.setStyle("-fx-font-weight: bold;");
+                    courseTitle.getStyleClass().add("welcome-card-title");
     
                     ProgressBar progressBar = new ProgressBar(course.getProgressPercentage() / 100.0);
+                    progressBar.getStyleClass().add("welcome-progress-bar");
+
                     Label progressLabel = new Label(String.format("Progress: %.1f%%", course.getProgressPercentage()));
+                    progressLabel.getStyleClass().add("welcome-progress-label");
+
     
                     courseCard.getChildren().addAll(courseTitle, progressBar, progressLabel);
                     coursesSection.getChildren().add(courseCard);
                 }
             }
+
+            ScrollPane coursesScrollPane = new ScrollPane(coursesSection);
+            coursesScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+            coursesScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+            coursesScrollPane.setFitToHeight(true);
+            coursesScrollPane.setPannable(true);
+            // this is for Smooth scrolling:
+            coursesScrollPane.setOnScroll(event -> {
+                double deltaY = event.getDeltaY() * 0.003; // Adjust speed here
+                coursesScrollPane.setVvalue(coursesScrollPane.getVvalue() - deltaY);
+            });
     
+
             // Recent Announcements Section
             Label announcementsTitle = new Label("Recent Announcements");
             announcementsTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
     
-            VBox announcementsSection = new VBox(10);
+            HBox announcementsSection = new HBox(10);
+            announcementsSection.getStyleClass().add("welcome-announcement-section");
+
             List<Announcement> announcements = announcementService.getAllAnnouncements();
             
             if (announcements.isEmpty()) {
@@ -147,17 +176,32 @@ public class StudentDashboard {
                     announcementCard.getStyleClass().add("welcome-announcement-card");
     
                     Label titleLabel = new Label(announcement.getTitle());
-                    titleLabel.setStyle("-fx-font-weight: bold;");
+                    titleLabel.getStyleClass().add("welcome-announcement-card-title");
     
                     Label contentLabel = new Label(announcement.getContent());
                     contentLabel.setWrapText(true);
+                    contentLabel.getStyleClass().add("welcome-announcement-card-content");
+
     
                     Label teacherLabel = new Label("Posted by: " + announcement.getTeacherEmail());
+                    teacherLabel.getStyleClass().add("welcome-announcement-card-meta");
+
                     
                     announcementCard.getChildren().addAll(titleLabel, contentLabel, teacherLabel);
                     announcementsSection.getChildren().add(announcementCard);
                 }
             }
+            ScrollPane announcementsScrollPane = new ScrollPane(announcementsSection);
+            announcementsScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+            announcementsScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+            announcementsScrollPane.setFitToHeight(true);
+            announcementsScrollPane.setPannable(true);
+
+            // this is for Smooth scrolling:
+            announcementsScrollPane.setOnScroll(event -> {
+                double deltaY = event.getDeltaY() * 0.003; // Adjust speed here
+                announcementsScrollPane.setVvalue(announcementsScrollPane.getVvalue() - deltaY);
+            });
     
             welcomeView.getChildren().addAll(
                 new Label("Welcome, " + courseService.getStudentDetails(studentId).getString("name")),

@@ -1,80 +1,320 @@
 /* General Styles */
 .root {
     -fx-font-family: "Arial, sans-serif";
-    -fx-background-color: #f4f4f9;
+    -fx-background-color: #f0f3f7;
+    -fx-padding: 15;
+    -fx-spacing: 10;
+}
+.scroll-pane {
+    -fx-hbar-policy: never;
+    -fx-vbar-policy: as-needed;
+    -fx-fit-to-width: true;
+    -fx-fit-to-height: false;
+    -fx-smooth-scroll: true;
     -fx-padding: 10;
-    padding: 10;
 }
 
 /* Sidebar Styling */
 .sidebar {
-    -fx-background-color: #2c3e50;
-    -fx-padding: 10;
-    -fx-spacing: 10;
+    -fx-background-color: linear-gradient(to bottom, #34495e, #2c3e50);
+    -fx-padding: 15;
+    -fx-spacing: 15;
+    -fx-border-width: 0 2px 0 0;
+    -fx-border-color: #bdc3c7;
 }
 
 .sidebar Button {
-    -fx-background-color: #34495e;
-    -fx-text-fill: #ecf0f1;
-    -fx-font-size: 14px;
+    -fx-background-color: #3b5998;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 15px;
     -fx-font-weight: bold;
-    -fx-cursor: hand;
-    -fx-border-radius: 5;
-    -fx-background-radius: 5;
-    -fx-border-color: #34495e;
+    -fx-padding: 10;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-border-color: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.25), 5, 0, 0, 1);
 }
 
 .sidebar Button:hover {
-    -fx-background-color: #3b5998;
+    -fx-background-color: #4c75cd;
+    -fx-border-color: #ffffff;
+    -fx-text-fill: #fdfdfd;
+    -fx-scale-x: 1.03;
+    -fx-scale-y: 1.03;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 10, 0, 0, 3);
 }
 
 .sidebar .profile-name {
-    -fx-font-size: 18px;
+    -fx-font-size: 20px;
     -fx-text-fill: #ecf0f1;
     -fx-font-weight: bold;
+    -fx-padding: 5 0 5 0;
 }
 
 .sidebar .profile-email {
     -fx-font-size: 14px;
-    -fx-text-fill: #bdc3c7;
+    -fx-text-fill: #d5d8dc;
 }
 
-/* Content Area */
+
+/* Welcome View - Enhanced Design */
+.welcome-container {
+    -fx-background-color: linear-gradient(135deg, #f5f7fa 0%, #e6e9f0 100%);
+    -fx-background-radius: 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.15), 25, 0, 0, 10);
+    -fx-padding: 30;
+}
+
+.welcome-header {
+    -fx-background-color: linear-gradient(to right, #4b6cb7, #182848);
+    -fx-background-radius: 15;
+    -fx-padding: 20;
+    -fx-alignment: center-left;
+}
+
+.welcome-header-text {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.welcome-subheader {
+    -fx-font-size: 16px;
+    -fx-text-fill: #7f8c8d;
+    -fx-padding: 10 0 20 0;
+}
+
+/* Insights Section */
+.welcome-insights-section {
+    -fx-background-color: white;
+    -fx-background-radius: 15;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 10, 0, 0, 5);
+    -fx-padding: 20;
+    -fx-spacing: 15;
+}
+
+.welcome-insights-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+    -fx-padding: 0 0 10 0;
+}
+
+.welcome-card {
+    -fx-background-color: #f9f9fb;
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.05), 10, 0, 0, 3);
+    -fx-padding: 15;
+    -fx-spacing: 10;
+    -fx-border-color: #e1e4e8;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+}
+
+.welcome-card-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #34495e;
+}
+
+.welcome-card-subtitle {
+    -fx-font-size: 14px;
+    -fx-text-fill: #7f8c8d;
+}
+
+/* Progress Styles */
+.welcome-progress-bar {
+    -fx-accent: #3498db;
+    -fx-background-color: #e0e0e0;
+    -fx-background-radius: 10;
+    -fx-text-box-border: transparent;
+    -fx-control-inner-background: #e0e0e0;
+}
+
+.welcome-progress-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #34495e;
+}
+
+/* Announcement Styles */
+.welcome-announcement-section {
+    -fx-background-color: white;
+    -fx-background-radius: 15;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 10, 0, 0, 5);
+    -fx-padding: 20;
+}
+
+.welcome-announcement-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+    -fx-padding: 0 0 10 0;
+}
+
+.welcome-announcement-card {
+    -fx-background-color: #f4f6f7;
+    -fx-background-radius: 10;
+    -fx-padding: 15;
+    -fx-spacing: 8;
+    -fx-border-color: #bdc3c7;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.05), 5, 0, 0, 2);
+}
+
+.welcome-announcement-card-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2980b9;
+}
+
+.welcome-announcement-card-content {
+    -fx-font-size: 13px;
+    -fx-text-fill: #34495e;
+    -fx-wrap-text: true;
+}
+
+.welcome-announcement-card-meta {
+    -fx-font-size: 11px;
+    -fx-text-fill: #7f8c8d;
+    -fx-text-alignment: right;
+}
+
+/* Responsive and Interactive Hover Effects */
+.welcome-card:hover,
+.welcome-announcement-card:hover {
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+    -fx-background-color: #f0f3f7;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.15), 15, 0, 0, 5);
+}
+
+/* Animation Keyframes */
+@keyframes slide-in {
+    from {
+        -fx-translate-y: 50;
+        opacity: 0;
+    }
+
+    to {
+        -fx-translate-y: 0;
+        opacity: 1;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 800px) {
+    .welcome-container {
+        -fx-padding: 15;
+    }
+
+    .welcome-header-text {
+        -fx-font-size: 20px;
+    }
+
+    .welcome-card,
+    .welcome-announcement-card {
+        -fx-padding: 10;
+    }
+}
+
+/* Dashboard Content Area */
 .dashboard {
     -fx-background-color: #ffffff;
-    -fx-padding: 20;
+    -fx-padding: 25;
+    -fx-border-radius: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.15), 10, 0, 0, 2);
+    -fx-border-color: #dcdcdc;
+    -fx-border-width: 2px;
 }
 
 /* Course Card Styling */
 .course-card {
     -fx-background-color: #ffffff;
     -fx-border-color: #dcdcdc;
-    -fx-border-width: 1;
-    -fx-border-radius: 10;
-    -fx-padding: 10;
-    -fx-spacing: 10;
-    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 10, 0, 0, 2);
-    -fx-background-radius: 10;
+    -fx-border-width: 2;
+    -fx-border-radius: 12;
+    -fx-padding: 15;
+    -fx-spacing: 12;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 10, 0, 0, 3);
+    -fx-background-radius: 12;
     -fx-cursor: hand;
+    -fx-transition: all 0.3s ease-in-out;
 }
 
 .course-card:hover {
     -fx-background-color: #f8f9fa;
-    -fx-border-color: #bdc3c7;
+    -fx-border-color: #3498db;
+    -fx-effect: dropshadow(gaussian, rgba(52, 152, 219, 0.25), 15, 0, 0, 5);
 }
 
 .course-card .course-title {
-    -fx-font-size: 16px;
+    -fx-font-size: 18px;
     -fx-font-weight: bold;
     -fx-text-fill: #2c3e50;
+    -fx-padding: 5 0;
 }
 
 .course-card .course-description {
     -fx-font-size: 14px;
     -fx-text-fill: #7f8c8d;
+    -fx-padding: 5 0;
+    -fx-line-spacing: 3;
 }
 
 .course-card .course-progress {
     -fx-font-size: 12px;
     -fx-text-fill: #3498db;
+    -fx-padding: 5 0;
+}
+
+/* Announcement Styling */
+.announcement-card {
+    -fx-background-color: #f8f9fa;
+    -fx-border-color: #bdc3c7;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 8;
+    -fx-padding: 12;
+    -fx-spacing: 8;
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 8, 0, 0, 2);
+}
+
+.announcement-card .announcement-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #34495e;
+    -fx-padding: 5 0;
+}
+
+.announcement-card .announcement-body {
+    -fx-font-size: 14px;
+    -fx-text-fill: #7f8c8d;
+    -fx-padding: 5 0;
+}
+
+/* Notifications Styling */
+.notification-card {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e67e22;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 10;
+    -fx-padding: 10;
+    -fx-spacing: 10;
+    -fx-background-radius: 10;
+}
+
+.notification-card:hover {
+    -fx-background-color: #fef6e4;
+    -fx-border-color: #f39c12;
+}
+
+/* Progress Bar */
+.progress-bar {
+    -fx-accent: #27ae60;
+    -fx-background-insets: 0;
+    -fx-padding: 5;
+    -fx-border-color: #dcdcdc;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
 }

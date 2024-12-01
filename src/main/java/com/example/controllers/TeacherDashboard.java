@@ -14,6 +14,7 @@ import com.mongodb.client.model.Filters;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
@@ -93,11 +94,12 @@ public class TeacherDashboard {
         sidebar.setPadding(new Insets(10));
         sidebar.setPrefWidth(200);
 
+        Button welcomeBtn = new Button("Welcome");
         Button coursesBtn = new Button("My Courses");
         Button manageStudentsBtn = new Button("Manage Students");
         Button announcementsBtn = new Button("Announcements");
         Button addStudentBtn = new Button("Add Student to Course");
-        Button welcomeBtn = new Button("Welcome");
+        Button logoutBtn = new Button("Logout");
 
 
         coursesBtn.setMaxWidth(Double.MAX_VALUE);
@@ -105,12 +107,14 @@ public class TeacherDashboard {
         announcementsBtn.setMaxWidth(Double.MAX_VALUE);
         addStudentBtn.setMaxWidth(Double.MAX_VALUE);
         welcomeBtn.setMaxWidth(Double.MAX_VALUE);
+        logoutBtn.setMaxWidth(Double.MAX_VALUE);
 
         coursesBtn.setOnAction(e -> showCoursesView());
         manageStudentsBtn.setOnAction(e -> showManageStudentsView());
         announcementsBtn.setOnAction(e -> showAnnouncementsView());
         addStudentBtn.setOnAction(e -> addStudentToCourseView());
         welcomeBtn.setOnAction(e -> showWelcomeView());
+        logoutBtn.setOnAction(e -> new LogOut(mainApp).execute());
 
         sidebar.getChildren().addAll(
                 createUserProfile(),
@@ -119,88 +123,112 @@ public class TeacherDashboard {
                 manageStudentsBtn,
                 announcementsBtn,
                 addStudentBtn,
-                welcomeBtn
+                welcomeBtn,
+                logoutBtn
         );
 
         return sidebar;
     }
 
 
-private void showWelcomeView() {
-    VBox welcomeView = new VBox(20);
-    welcomeView.setPadding(new Insets(20));
+    private void showWelcomeView() {
+        VBox welcomeView = new VBox(20);
+        welcomeView.getStyleClass().add("welcome-container");
 
-    try {
-        // Course Progress Section
-        Label courseProgressTitle = new Label("Course Insights");
-        courseProgressTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+        try {
+            // Course Progress Section
+            Label courseProgressTitle = new Label("Course Insights");
+            courseProgressTitle.getStyleClass().add("welcome-header-text");
 
-        VBox courseProgressSection = new VBox(10);
-        List<Course> courses = courseService.getCoursesByTeacher(teacherEmail);
-        
-        if (courses.isEmpty()) {
-            courseProgressSection.getChildren().add(new Label("You have not created any courses yet."));
-        } else {
-            for (Course course : courses) {
-                VBox courseCard = new VBox(5);
-                courseCard.getStyleClass().add("welcome-course-card");
+            HBox courseProgressSection = new HBox(10);
+            courseProgressSection.getStyleClass().add("welcome-insights-section");
 
-                Label courseTitle = new Label(course.getTitle());
-                courseTitle.setStyle("-fx-font-weight: bold;");
-
-                // Calculate average student progress
-                double avgProgress = courseService.getAverageStudentProgressForCourse(course.getId());
-                ProgressBar progressBar = new ProgressBar(avgProgress / 100.0);
-                Label progressLabel = new Label(String.format("Average Student Progress: %.1f%%", avgProgress));
-
-                courseCard.getChildren().addAll(courseTitle, progressBar, progressLabel);
-                courseProgressSection.getChildren().add(courseCard);
-            }
-        }
-
-        // Recent Announcements Section
-        Label announcementsTitle = new Label("Recent Announcements");
-        announcementsTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
-
-        VBox announcementsSection = new VBox(10);
-        List<Announcement> announcements = announcementService.getAllAnnouncements();
-        
-        if (announcements.isEmpty()) {
-            announcementsSection.getChildren().add(new Label("No recent announcements."));
-        } else {
-            // Show most recent 3 announcements
-            announcements.sort((a1, a2) -> Long.compare(a2.getTimestamp(), a1.getTimestamp()));
+            List<Course> courses = courseService.getCoursesByTeacher(teacherEmail);
             
-            for (Announcement announcement : announcements.subList(0, Math.min(3, announcements.size()))) {
-                VBox announcementCard = new VBox(5);
-                announcementCard.getStyleClass().add("welcome-announcement-card");
+            if (courses.isEmpty()) {
+                courseProgressSection.getChildren().add(new Label("You have not created any courses yet."));
+            } else {
+                for (Course course : courses) {
+                    VBox courseCard = new VBox(5);
+                    courseCard.getStyleClass().add("welcome-card");
 
-                Label titleLabel = new Label(announcement.getTitle());
-                titleLabel.setStyle("-fx-font-weight: bold;");
+                    Label courseTitle = new Label(course.getTitle());
+                    courseTitle.getStyleClass().add("welcome-card-title");
 
-                Label contentLabel = new Label(announcement.getContent());
-                contentLabel.setWrapText(true);
+                    // Calculate average student progress
+                    double avgProgress = courseService.getAverageStudentProgressForCourse(course.getId());
+                    ProgressBar progressBar = new ProgressBar(avgProgress / 100.0);
+                    progressBar.getStyleClass().add("welcome-progress-bar");
 
-                announcementCard.getChildren().addAll(titleLabel, contentLabel);
-                announcementsSection.getChildren().add(announcementCard);
+                    Label progressLabel = new Label(String.format("Average Student Progress: %.1f%%", avgProgress));
+                    progressLabel.getStyleClass().add("welcome-progress-label");
+
+                    courseCard.getChildren().addAll(courseTitle, progressBar, progressLabel);
+                    courseProgressSection.getChildren().add(courseCard);
+                }
             }
+            ScrollPane coursesScrollPane = new ScrollPane(courseProgressSection);
+            coursesScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+            coursesScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+            coursesScrollPane.setFitToHeight(true);
+            coursesScrollPane.setPannable(true);
+
+            // Recent Announcements Section
+            Label announcementsTitle = new Label("Recent Announcements");
+            announcementsTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
+            HBox announcementsSection = new HBox(10);
+            announcementsSection.getStyleClass().add("welcome-announcement-section");
+
+            List<Announcement> announcements = announcementService.getAllAnnouncements();
+            
+            if (announcements.isEmpty()) {
+                announcementsSection.getChildren().add(new Label("No recent announcements."));
+            } else {
+                // Show most recent 3 announcements
+                announcements.sort((a1, a2) -> Long.compare(a2.getTimestamp(), a1.getTimestamp()));
+                
+                for (Announcement announcement : announcements.subList(0, Math.min(3, announcements.size()))) {
+                    VBox announcementCard = new VBox(5);
+                    announcementCard.getStyleClass().add("welcome-announcement-card");
+
+                    Label titleLabel = new Label(announcement.getTitle());
+                    titleLabel.getStyleClass().add("welcome-announcement-card-title");
+
+                    Label contentLabel = new Label(announcement.getContent());
+                    contentLabel.getStyleClass().add("welcome-announcement-card-content");
+
+                    announcementCard.getChildren().addAll(titleLabel, contentLabel);
+                    announcementsSection.getChildren().add(announcementCard);
+                }
+            }
+            ScrollPane announcementsScrollPane = new ScrollPane(announcementsSection);
+            announcementsScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+            announcementsScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+            announcementsScrollPane.setFitToHeight(true);
+            announcementsScrollPane.setPannable(true);
+            
+            // this is for Smooth scrolling:
+            announcementsScrollPane.setOnScroll(event -> {
+                double deltaY = event.getDeltaY() * 0.003; // Adjust speed here
+                announcementsScrollPane.setVvalue(announcementsScrollPane.getVvalue() - deltaY);
+            });
+
+            welcomeView.getChildren().addAll(
+                new Label("Welcome, " + courseService.getTeacherDetails(teacherEmail).getString("name")),
+                courseProgressTitle,
+                courseProgressSection,
+                announcementsTitle,
+                announcementsSection
+            );
+
+            contentArea.getChildren().clear();
+            contentArea.getChildren().add(new ScrollPane(welcomeView));
+
+        } catch (RuntimeException e) {
+            showError("Error loading welcome page", e.getMessage());
         }
-
-        welcomeView.getChildren().addAll(
-            new Label("Welcome, " + courseService.getTeacherDetails(teacherEmail).getString("name")),
-            courseProgressTitle,
-            courseProgressSection,
-            announcementsTitle,
-            announcementsSection
-        );
-
-        contentArea.getChildren().clear();
-        contentArea.getChildren().add(new ScrollPane(welcomeView));
-
-    } catch (RuntimeException e) {
-        showError("Error loading welcome page", e.getMessage());
     }
-}
 
     private VBox createUserProfile() {
         VBox profile = new VBox(5);
