@@ -6,13 +6,15 @@ public class Course {
     private String description;
     private double progressPercentage;
     private String teacherEmail ;
+    private boolean isOpenAccess;
 
 
-    public Course(String id ,String title, String description, double progressPercentage) {
+    public Course(String id ,String title, String description, double progressPercentage , boolean isOpenAccess) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.progressPercentage = progressPercentage;
+        this.isOpenAccess = isOpenAccess;
     }
 
     // Getters and Setters
@@ -48,5 +50,8 @@ public class Course {
     }
     public void setTeacherEmail(String teacherEmail) {
         this.teacherEmail = teacherEmail;
+    }
+    public boolean isOpenAccess() {
+        return isOpenAccess;
     }
 }

@@ -6,7 +6,8 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.VBox;
 
 public class CourseCard extends VBox {
-    public CourseCard(String title, String description, double progress) {
+    private String courseId;
+    public CourseCard(String title, String description, double progress, String courseId) {
         setSpacing(5);
         setPadding(new Insets(10));
         getStyleClass().add("course-card");
@@ -17,9 +18,16 @@ public class CourseCard extends VBox {
         Label descriptionLabel = new Label(description);
         descriptionLabel.setWrapText(true);
 
-        ProgressBar progressBar = new ProgressBar(progress);
+        ProgressBar progressBar = new ProgressBar(progress/100.0);
         progressBar.setPrefWidth(200);
+
+        this.courseId = courseId; 
 
         getChildren().addAll(titleLabel, descriptionLabel, progressBar);
     }
+    
+    public String getCourseId(){
+        return courseId;
+    }
+
 }

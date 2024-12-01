@@ -1,12 +1,15 @@
 package com.example.controllers;
 
 import com.example.MainApp;
+import com.example.models.Announcement;
 import com.example.models.Course;
 import com.example.models.Student;
 import com.example.services.AnnouncementService;
 import com.example.services.CourseService;
 import com.example.views.components.CourseCard;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
@@ -27,12 +30,15 @@ public class TeacherDashboard {
     private StackPane contentArea;
     private CourseService courseService;
     private AnnouncementService announcementService;
+    private final MongoCollection<Document> studentCollection;
 
-    public TeacherDashboard(MainApp mainApp, MongoDatabase database, String teacherEmail) {
+    public TeacherDashboard(MainApp mainApp, MongoDatabase database, String teacherEmail ) {
         this.mainApp = mainApp;
         this.teacherEmail = teacherEmail;
         this.courseService = new CourseService(database);
         this.announcementService = new AnnouncementService(database);
+        this.studentCollection = database.getCollection("students");
+
         createView();
     }
 
@@ -48,6 +54,40 @@ public class TeacherDashboard {
         showCoursesView();
     }
 
+    private void addStudentToCourseView() {
+        VBox addStudentView = new VBox(10);
+        addStudentView.setPadding(new Insets(20));
+
+        TextField studentEmailField = new TextField();
+        studentEmailField.setPromptText("Student Email");
+
+        TextField courseIdField = new TextField();
+        courseIdField.setPromptText("Course ID");
+
+        Button addButton = new Button("Add Student");
+        addButton.setOnAction(e -> {
+            try {
+                String studentEmail = studentEmailField.getText();
+                String courseId = courseIdField.getText();
+
+                Document student = studentCollection.find(Filters.eq("email", studentEmail)).first();
+                if (student != null) {
+                    String studentId = student.getObjectId("_id").toString();
+                    courseService.addStudentToCourse(studentId, courseId);
+                    showSuccess("Success", "Student added to course.");
+                } else {
+                    showError("Error", "Student not found.");
+                }
+            } catch (Exception ex) {
+                showError("Error adding student", ex.getMessage());
+            }
+        });
+
+        addStudentView.getChildren().addAll(studentEmailField, courseIdField, addButton);
+        contentArea.getChildren().clear();
+        contentArea.getChildren().add(addStudentView);
+    }
+
     private VBox createSidebar() {
         VBox sidebar = new VBox(10);
         sidebar.setPadding(new Insets(10));
@@ -56,24 +96,111 @@ public class TeacherDashboard {
         Button coursesBtn = new Button("My Courses");
         Button manageStudentsBtn = new Button("Manage Students");
         Button announcementsBtn = new Button("Announcements");
+        Button addStudentBtn = new Button("Add Student to Course");
+        Button welcomeBtn = new Button("Welcome");
+
 
         coursesBtn.setMaxWidth(Double.MAX_VALUE);
         manageStudentsBtn.setMaxWidth(Double.MAX_VALUE);
         announcementsBtn.setMaxWidth(Double.MAX_VALUE);
+        addStudentBtn.setMaxWidth(Double.MAX_VALUE);
+        welcomeBtn.setMaxWidth(Double.MAX_VALUE);
 
         coursesBtn.setOnAction(e -> showCoursesView());
         manageStudentsBtn.setOnAction(e -> showManageStudentsView());
         announcementsBtn.setOnAction(e -> showAnnouncementsView());
+        addStudentBtn.setOnAction(e -> addStudentToCourseView());
+        welcomeBtn.setOnAction(e -> showWelcomeView());
 
         sidebar.getChildren().addAll(
                 createUserProfile(),
                 new Separator(),
                 coursesBtn,
                 manageStudentsBtn,
-                announcementsBtn);
+                announcementsBtn,
+                addStudentBtn,
+                welcomeBtn
+        );
 
         return sidebar;
     }
+
+
+private void showWelcomeView() {
+    VBox welcomeView = new VBox(20);
+    welcomeView.setPadding(new Insets(20));
+
+    try {
+        // Course Progress Section
+        Label courseProgressTitle = new Label("Course Insights");
+        courseProgressTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
+        VBox courseProgressSection = new VBox(10);
+        List<Course> courses = courseService.getCoursesByTeacher(teacherEmail);
+        
+        if (courses.isEmpty()) {
+            courseProgressSection.getChildren().add(new Label("You have not created any courses yet."));
+        } else {
+            for (Course course : courses) {
+                VBox courseCard = new VBox(5);
+                courseCard.getStyleClass().add("welcome-course-card");
+
+                Label courseTitle = new Label(course.getTitle());
+                courseTitle.setStyle("-fx-font-weight: bold;");
+
+                // Calculate average student progress
+                double avgProgress = courseService.getAverageStudentProgressForCourse(course.getId());
+                ProgressBar progressBar = new ProgressBar(avgProgress / 100.0);
+                Label progressLabel = new Label(String.format("Average Student Progress: %.1f%%", avgProgress));
+
+                courseCard.getChildren().addAll(courseTitle, progressBar, progressLabel);
+                courseProgressSection.getChildren().add(courseCard);
+            }
+        }
+
+        // Recent Announcements Section
+        Label announcementsTitle = new Label("Recent Announcements");
+        announcementsTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
+        VBox announcementsSection = new VBox(10);
+        List<Announcement> announcements = announcementService.getAllAnnouncements();
+        
+        if (announcements.isEmpty()) {
+            announcementsSection.getChildren().add(new Label("No recent announcements."));
+        } else {
+            // Show most recent 3 announcements
+            announcements.sort((a1, a2) -> Long.compare(a2.getTimestamp(), a1.getTimestamp()));
+            
+            for (Announcement announcement : announcements.subList(0, Math.min(3, announcements.size()))) {
+                VBox announcementCard = new VBox(5);
+                announcementCard.getStyleClass().add("welcome-announcement-card");
+
+                Label titleLabel = new Label(announcement.getTitle());
+                titleLabel.setStyle("-fx-font-weight: bold;");
+
+                Label contentLabel = new Label(announcement.getContent());
+                contentLabel.setWrapText(true);
+
+                announcementCard.getChildren().addAll(titleLabel, contentLabel);
+                announcementsSection.getChildren().add(announcementCard);
+            }
+        }
+
+        welcomeView.getChildren().addAll(
+            new Label("Welcome, " + courseService.getTeacherDetails(teacherEmail).getString("name")),
+            courseProgressTitle,
+            courseProgressSection,
+            announcementsTitle,
+            announcementsSection
+        );
+
+        contentArea.getChildren().clear();
+        contentArea.getChildren().add(new ScrollPane(welcomeView));
+
+    } catch (RuntimeException e) {
+        showError("Error loading welcome page", e.getMessage());
+    }
+}
 
     private VBox createUserProfile() {
         VBox profile = new VBox(5);
@@ -106,7 +233,10 @@ public class TeacherDashboard {
                 coursesView.getChildren().add(createCourseCard(
                         course.getTitle(),
                         course.getDescription(),
-                        course.getProgressPercentage()));
+                        course.getProgressPercentage(),
+                        course.getId() 
+                        
+                        ));
             }
 
             Button createCourseBtn = new Button("Create New Course");
@@ -120,8 +250,8 @@ public class TeacherDashboard {
         }
     }
 
-    private CourseCard createCourseCard(String title, String description, double progress) {
-        return new CourseCard(title, description, progress);
+    private CourseCard createCourseCard(String title, String description, double progress , String courseId) {
+        return new CourseCard(title, description, progress,courseId);
     }
 
     private void showManageStudentsView() {
@@ -147,46 +277,51 @@ public class TeacherDashboard {
             System.out.println("Error loading students" + e.getMessage());
         }
     }
-
     private void showCreateCourseView() {
         VBox createCourseView = new VBox(10);
         createCourseView.setPadding(new Insets(20));
-
+    
         TextField titleField = new TextField();
         titleField.setPromptText("Course Title");
-
+    
         TextArea descriptionField = new TextArea();
         descriptionField.setPromptText("Course Description");
-
+    
+        // Add checkbox for "Open Access"
+        CheckBox openAccessCheckbox = new CheckBox("Make this course open to all students");
+        openAccessCheckbox.setSelected(false); // Default to restricted
+    
         Button saveBtn = new Button("Save Course");
         saveBtn.setOnAction(e -> {
             try {
                 String title = titleField.getText();
                 String description = descriptionField.getText();
-
+                boolean isOpenAccess = openAccessCheckbox.isSelected();
+    
                 if (title.isEmpty() || description.isEmpty()) {
                     showError("Validation Error", "Title and description are required");
                     return;
                 }
-
-                String courseId = courseService.createCourse(title, description, teacherEmail);
+    
+                String courseId = courseService.createCourse(title, description,teacherEmail, isOpenAccess);
                 showSuccess("Course Created", "Course has been successfully created with ID: " + courseId);
                 showCoursesView(); // Refresh courses view
             } catch (RuntimeException ex) {
                 showError("Error creating course", ex.getMessage());
             }
         });
-
+    
         createCourseView.getChildren().addAll(
                 new Label("Create New Course"),
                 titleField,
                 descriptionField,
+                openAccessCheckbox,
                 saveBtn);
-
+    
         contentArea.getChildren().clear();
         contentArea.getChildren().add(createCourseView);
     }
-
+    
     private void showAnnouncementsView() {
         VBox announcementsView = new VBox(10);
         announcementsView.setPadding(new Insets(20));

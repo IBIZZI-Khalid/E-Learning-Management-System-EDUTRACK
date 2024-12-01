@@ -52,7 +52,7 @@ public class MainApp extends Application {
     }
 
     public void showStudentDashboard(String studentId) {
-        StudentDashboard studentDashboard = new StudentDashboard(
+        studentDashboard = new StudentDashboard(
             this,
             mongoDatabase,  // Your MongoDB database instance
             studentId
