@@ -15,6 +15,7 @@ import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
@@ -33,7 +34,7 @@ public class TeacherDashboard {
     private AnnouncementService announcementService;
     private final MongoCollection<Document> studentCollection;
 
-    public TeacherDashboard(MainApp mainApp, MongoDatabase database, String teacherEmail ) {
+    public TeacherDashboard(MainApp mainApp, MongoDatabase database, String teacherEmail) {
         this.mainApp = mainApp;
         this.teacherEmail = teacherEmail;
         this.courseService = new CourseService(database);
@@ -52,7 +53,7 @@ public class TeacherDashboard {
         view.setCenter(contentArea);
 
         applyStyling();
-        showCoursesView();
+        showWelcomeView();
     }
 
     private void addStudentToCourseView() {
@@ -94,63 +95,71 @@ public class TeacherDashboard {
         sidebar.setPadding(new Insets(10));
         sidebar.setPrefWidth(200);
 
-        Button welcomeBtn = new Button("Welcome");
+        Button welcomeBtn = new Button("Home");
         Button coursesBtn = new Button("My Courses");
         Button manageStudentsBtn = new Button("Manage Students");
         Button announcementsBtn = new Button("Announcements");
-        Button addStudentBtn = new Button("Add Student to Course");
+        Button addStudentBtn = new Button("Add A Student");
         Button logoutBtn = new Button("Logout");
 
-
+        welcomeBtn.setMaxWidth(Double.MAX_VALUE);
         coursesBtn.setMaxWidth(Double.MAX_VALUE);
         manageStudentsBtn.setMaxWidth(Double.MAX_VALUE);
         announcementsBtn.setMaxWidth(Double.MAX_VALUE);
         addStudentBtn.setMaxWidth(Double.MAX_VALUE);
-        welcomeBtn.setMaxWidth(Double.MAX_VALUE);
         logoutBtn.setMaxWidth(Double.MAX_VALUE);
 
+        welcomeBtn.setOnAction(e -> showWelcomeView());
         coursesBtn.setOnAction(e -> showCoursesView());
         manageStudentsBtn.setOnAction(e -> showManageStudentsView());
         announcementsBtn.setOnAction(e -> showAnnouncementsView());
         addStudentBtn.setOnAction(e -> addStudentToCourseView());
-        welcomeBtn.setOnAction(e -> showWelcomeView());
         logoutBtn.setOnAction(e -> new LogOut(mainApp).execute());
 
         sidebar.getChildren().addAll(
                 createUserProfile(),
                 new Separator(),
+                welcomeBtn,
                 coursesBtn,
                 manageStudentsBtn,
                 announcementsBtn,
                 addStudentBtn,
-                welcomeBtn,
-                logoutBtn
-        );
+                logoutBtn);
 
         return sidebar;
     }
-
 
     private void showWelcomeView() {
         VBox welcomeView = new VBox(20);
         welcomeView.getStyleClass().add("welcome-container");
 
         try {
+            Label mainWelcomeHeader = new Label(
+                    "Welcome, " + courseService.getTeacherDetails(teacherEmail).getString("name"));
+            mainWelcomeHeader.getStyleClass().add("label-header");
+
             // Course Progress Section
             Label courseProgressTitle = new Label("Course Insights");
             courseProgressTitle.getStyleClass().add("welcome-header-text");
 
             HBox courseProgressSection = new HBox(10);
-            courseProgressSection.getStyleClass().add("welcome-insights-section");
+            courseProgressSection.getStyleClass().add("welcome-card-container");
+
+            // Ensure the HBox expands to fit its children
+            courseProgressSection.setMinWidth(Region.USE_PREF_SIZE);
+            courseProgressSection.setPrefWidth(Region.USE_COMPUTED_SIZE);
+            courseProgressSection.setMaxWidth(Region.USE_COMPUTED_SIZE);
 
             List<Course> courses = courseService.getCoursesByTeacher(teacherEmail);
-            
+
             if (courses.isEmpty()) {
                 courseProgressSection.getChildren().add(new Label("You have not created any courses yet."));
             } else {
                 for (Course course : courses) {
                     VBox courseCard = new VBox(5);
                     courseCard.getStyleClass().add("welcome-card");
+                    courseCard.setPrefWidth(250); // Set fixed width for course cards
+                    courseCard.setMaxWidth(250);
 
                     Label courseTitle = new Label(course.getTitle());
                     courseTitle.getStyleClass().add("welcome-card-title");
@@ -167,28 +176,33 @@ public class TeacherDashboard {
                     courseProgressSection.getChildren().add(courseCard);
                 }
             }
+
             ScrollPane coursesScrollPane = new ScrollPane(courseProgressSection);
             coursesScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
             coursesScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
             coursesScrollPane.setFitToHeight(true);
-            coursesScrollPane.setPannable(true);
+            coursesScrollPane.setFitToWidth(false); // Prevent resizing to fit width
+            coursesScrollPane.setPannable(true); // Allow panning
 
             // Recent Announcements Section
             Label announcementsTitle = new Label("Recent Announcements");
-            announcementsTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+            announcementsTitle.getStyleClass().add("welcome-header-text");
 
             HBox announcementsSection = new HBox(10);
-            announcementsSection.getStyleClass().add("welcome-announcement-section");
+            announcementsSection.getStyleClass().add("welcome-announcement-card-container");
+            announcementsSection.setMinWidth(Region.USE_PREF_SIZE);
+            announcementsSection.setPrefWidth(Region.USE_COMPUTED_SIZE);
+            announcementsSection.setMaxWidth(Region.USE_COMPUTED_SIZE);
 
             List<Announcement> announcements = announcementService.getAllAnnouncements();
-            
+
             if (announcements.isEmpty()) {
                 announcementsSection.getChildren().add(new Label("No recent announcements."));
             } else {
-                // Show most recent 3 announcements
+                // Show most recent 5 announcements
                 announcements.sort((a1, a2) -> Long.compare(a2.getTimestamp(), a1.getTimestamp()));
-                
-                for (Announcement announcement : announcements.subList(0, Math.min(3, announcements.size()))) {
+
+                for (Announcement announcement : announcements.subList(0, Math.min(5, announcements.size()))) {
                     VBox announcementCard = new VBox(5);
                     announcementCard.getStyleClass().add("welcome-announcement-card");
 
@@ -202,28 +216,25 @@ public class TeacherDashboard {
                     announcementsSection.getChildren().add(announcementCard);
                 }
             }
+
             ScrollPane announcementsScrollPane = new ScrollPane(announcementsSection);
             announcementsScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
             announcementsScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
             announcementsScrollPane.setFitToHeight(true);
+            announcementsScrollPane.setFitToWidth(false); // Prevent resizing to fit width
             announcementsScrollPane.setPannable(true);
-            
-            // this is for Smooth scrolling:
-            announcementsScrollPane.setOnScroll(event -> {
-                double deltaY = event.getDeltaY() * 0.003; // Adjust speed here
-                announcementsScrollPane.setVvalue(announcementsScrollPane.getVvalue() - deltaY);
-            });
 
+            // Add sections to welcomeView
             welcomeView.getChildren().addAll(
-                new Label("Welcome, " + courseService.getTeacherDetails(teacherEmail).getString("name")),
-                courseProgressTitle,
-                courseProgressSection,
-                announcementsTitle,
-                announcementsSection
-            );
+                    mainWelcomeHeader,
+                    courseProgressTitle,
+                    coursesScrollPane,
+                    announcementsTitle,
+                    announcementsScrollPane);
 
+            // Clear and add welcomeView to content area
             contentArea.getChildren().clear();
-            contentArea.getChildren().add(new ScrollPane(welcomeView));
+            contentArea.getChildren().add(welcomeView);
 
         } catch (RuntimeException e) {
             showError("Error loading welcome page", e.getMessage());
@@ -262,9 +273,9 @@ public class TeacherDashboard {
                         course.getTitle(),
                         course.getDescription(),
                         course.getProgressPercentage(),
-                        course.getId() 
-                        
-                        ));
+                        course.getId()
+
+                ));
             }
 
             Button createCourseBtn = new Button("Create New Course");
@@ -278,8 +289,8 @@ public class TeacherDashboard {
         }
     }
 
-    private CourseCard createCourseCard(String title, String description, double progress , String courseId) {
-        return new CourseCard(title, description, progress,courseId);
+    private CourseCard createCourseCard(String title, String description, double progress, String courseId) {
+        return new CourseCard(title, description, progress, courseId);
     }
 
     private void showManageStudentsView() {
@@ -305,91 +316,145 @@ public class TeacherDashboard {
             System.out.println("Error loading students" + e.getMessage());
         }
     }
+
     private void showCreateCourseView() {
         VBox createCourseView = new VBox(10);
         createCourseView.setPadding(new Insets(20));
-    
+
         TextField titleField = new TextField();
         titleField.setPromptText("Course Title");
-    
+
         TextArea descriptionField = new TextArea();
         descriptionField.setPromptText("Course Description");
-    
+
         // Add checkbox for "Open Access"
         CheckBox openAccessCheckbox = new CheckBox("Make this course open to all students");
         openAccessCheckbox.setSelected(false); // Default to restricted
-    
+
         Button saveBtn = new Button("Save Course");
         saveBtn.setOnAction(e -> {
             try {
                 String title = titleField.getText();
                 String description = descriptionField.getText();
                 boolean isOpenAccess = openAccessCheckbox.isSelected();
-    
+
                 if (title.isEmpty() || description.isEmpty()) {
                     showError("Validation Error", "Title and description are required");
                     return;
                 }
-    
-                String courseId = courseService.createCourse(title, description,teacherEmail, isOpenAccess);
+
+                String courseId = courseService.createCourse(title, description, teacherEmail, isOpenAccess);
                 showSuccess("Course Created", "Course has been successfully created with ID: " + courseId);
                 showCoursesView(); // Refresh courses view
             } catch (RuntimeException ex) {
                 showError("Error creating course", ex.getMessage());
             }
         });
-    
+
         createCourseView.getChildren().addAll(
                 new Label("Create New Course"),
                 titleField,
                 descriptionField,
                 openAccessCheckbox,
                 saveBtn);
-    
+
         contentArea.getChildren().clear();
         contentArea.getChildren().add(createCourseView);
     }
-    
+
     private void showAnnouncementsView() {
         VBox announcementsView = new VBox(10);
         announcementsView.setPadding(new Insets(20));
 
-        TextArea announcementTitlefield = new TextArea();
-        announcementTitlefield.setPromptText("Your announcement Title here ...");
+        try {
+            
+            
+            TextArea announcementTitlefield = new TextArea();
+            announcementTitlefield.setPromptText("Your announcement Title here ...");
 
-        TextArea announcementField = new TextArea();
-        announcementField.setPromptText("Write your announcement here...");
+            TextArea announcementField = new TextArea();
+            announcementField.setPromptText("Write your announcement here...");
 
-        Button postBtn = new Button("Post Announcement");
-        postBtn.setOnAction(e -> {
-            try {
-                String aTitle = announcementTitlefield.getText();
-                String announcement = announcementField.getText();
+            Button postBtn = new Button("Post Announcement");
+            postBtn.setOnAction(e -> {
+                try {
+                    String aTitle = announcementTitlefield.getText();
+                    String announcement = announcementField.getText();
 
-                if (announcement.isEmpty()) {
-                    showError("Validation Error", "Announcement text is required");
-                    return;
+                    if (announcement.isEmpty()) {
+                        showError("Validation Error", "Announcement text is required");
+                        return;
+                    }
+
+                    announcementService.postAnnouncement(aTitle, announcement, teacherEmail);
+                    showSuccess("Success", "Announcement posted successfully");
+                    announcementField.clear();
+                    announcementTitlefield.clear();
+
+                } catch (RuntimeException ex) {
+                    showError("Error posting announcement", ex.getMessage());
                 }
-                
-                announcementService.postAnnouncement(aTitle , announcement, teacherEmail);
-                showSuccess("Success", "Announcement posted successfully");
-                announcementField.clear();
-                announcementTitlefield.clear();
+            });
 
-            } catch (RuntimeException ex) {
-                showError("Error posting announcement", ex.getMessage());
+
+            try {
+                List<Announcement> announcements = announcementService.getAllAnnouncements();
+                // Fetch both general and course-specific announcements
+                // List<Announcement> generalAnnouncements =
+                // announcementService.getGeneralAnnouncements();
+                // List<Announcement> courseAnnouncements =
+                // announcementService.getAnnouncementsByCourse(studentId);
+
+                // // Combine announcements
+                // List<Announcement> allAnnouncements = new ArrayList<>();
+                // allAnnouncements.addAll(generalAnnouncements);
+                // allAnnouncements.addAll(courseAnnouncements);
+
+                if (announcements.isEmpty()) {
+                    Label noAnnouncementsLabel = new Label("No announcements at the moment.");
+                    announcementsView.getChildren().add(noAnnouncementsLabel);
+                } else {
+                    for (Announcement announcement : announcements) {
+                        VBox announcementCard = new VBox(5);
+                        announcementCard.getStyleClass().add("announcement-card");
+
+                        Label titleLabel = new Label(announcement.getTitle());
+                        titleLabel.setStyle("-fx-font-weight: bold;");
+
+                        Label contentLabel = new Label(announcement.getContent());
+                        Label teacherLabel = new Label("Posted by: " + announcement.getTeacherEmail());
+                        Label timestampLabel = new Label("Posted on: " +
+                                new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(
+                                        new java.util.Date(announcement.getTimestamp())));
+
+                        announcementCard.getChildren().addAll(
+                                titleLabel,
+                                contentLabel,
+                                teacherLabel,
+                                timestampLabel);
+                        announcementsView.getChildren().add(announcementCard);
+                    }
+                }
+                ScrollPane scrollPane = new ScrollPane(announcementsView);
+                scrollPane.setFitToWidth(true);
+
+                contentArea.getChildren().clear();
+                contentArea.getChildren().add(new ScrollPane(announcementsView));
+            } catch (RuntimeException e) {
+                showError("Error loading announcements", e.getMessage());
             }
-        });
+            announcementsView.getChildren().addAll(
+                    new Label("Post Announcements"),
+                    announcementField,
+                    announcementTitlefield,
+                    postBtn);
 
-        announcementsView.getChildren().addAll(
-            new Label("Post Announcements"),
-            announcementField,
-            announcementTitlefield,
-            postBtn
-        );
+            contentArea.getChildren().clear();
+            contentArea.getChildren().add(announcementsView);
+        }catch (Exception e) {
+            showError("Error laoding announcements page : ", e.getMessage());
 
-        contentArea.getChildren().clear();
-        contentArea.getChildren().add(announcementsView);
+        }
     }
 
     private void applyStyling() {
