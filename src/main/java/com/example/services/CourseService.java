@@ -74,11 +74,16 @@ public class CourseService {
         try {
             while (cursor.hasNext()) {
                 Document doc = cursor.next();
+                double progressPercentage = doc.get("progressPercentage") instanceof Integer
+                        ? doc.getInteger("progressPercentage").doubleValue()
+                        : doc.getDouble("progressPercentage");
+
                 Course course = new Course(
                         doc.getObjectId("_id").toString(), // Course ID
                         doc.getString("title"), // Title
                         doc.getString("description"), // Description
-                        doc.getDouble("progressPercentage"), // Average progress of students (optional)
+                        // doc.getDouble("progressPercentage"), // Average progress of students (optional)
+                        progressPercentage ,
                         doc.getBoolean("isOpenAccess"));
 
                 course.setTeacherEmail(doc.getString(teacherEmail));
@@ -109,7 +114,11 @@ public class CourseService {
                             Student student = new Student(
                                     doc.getObjectId("_id").toString(),
                                     doc.getString("name"),
-                                    doc.getString("email"));
+                                    doc.getString("email"),
+                                    doc.getString("securityQuestion"),
+                                    doc.getString("securityAnswer"),
+                                    doc.getString("password")
+                                    );
                             students.add(student);
                         });
             }
@@ -148,15 +157,23 @@ public class CourseService {
             if (student != null && student.containsKey("enrolledCourses")) {
                 enrolledCourseIds = student.getList("enrolledCourses", String.class);
             }
+            
+
             // Fetch open-access courses and the student's enrolled courses
             courseCollection.find(Filters.or(
                     Filters.eq("isOpenAccess", true),
                     Filters.in("_id", enrolledCourseIds))).forEach(doc -> {
+                        // first lets find course percentage hiatch fih error ma3rfoch program wach int wlla double 
+                        double progressPercentage = doc.get("progressPercentage") instanceof Integer
+                        ? doc.getInteger("progressPercentage").doubleValue()
+                        : doc.getDouble("progressPercentage");
+
                         Course course = new Course(
                                 doc.getObjectId("_id").toString(),
                                 doc.getString("title"),
                                 doc.getString("description"),
-                                doc.getDouble("progressPercentage"),
+                                // doc.getDouble("progressPercentage"),
+                                progressPercentage,
                                 doc.getBoolean("isOpenAccess"));
                         courses.add(course);
                     });

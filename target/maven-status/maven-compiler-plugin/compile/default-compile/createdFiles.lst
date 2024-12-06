@@ -1,1 +1,11 @@
+com\example\models\Announcement.class
+com\example\MainApp.class
+com\example\controllers\SignupPage.class
+com\example\models\Student.class
+com\example\models\Course.class
+com\example\controllers\LogOut.class
+com\example\controllers\StudentDashboard.class
+com\example\views\components\CourseCard.class
+com\example\services\AnnouncementService.class
+com\example\controllers\TeacherDashboard.class
 com\example\YouTubeScraper.class

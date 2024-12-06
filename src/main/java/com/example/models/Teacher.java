@@ -1,8 +1,8 @@
 package com.example.models;
-
 import org.bson.Document;
 
-public class Student {
+public class Teacher {
+
     private String id;
     private String name;
     private String email;
@@ -10,7 +10,7 @@ public class Student {
     private String securityQuestion;
     private String securityAnswer;
 
-    public Student(String id, String name, String email,String securityQuestion,String securityAnswer, String password) {
+    public Teacher(String id, String name, String email,String securityQuestion,String securityAnswer, String password) {
         this.id = id;    
         this.name = name;
         this.email = email;
@@ -18,8 +18,8 @@ public class Student {
         this.securityAnswer = securityAnswer;
         this.password = password;
     }
-    public static Student getfromDocument(Document document) {
-        return new Student(
+    public static Teacher getfromDocument(Document document) {
+        return new Teacher(
                 document.getObjectId("_id").toHexString(),
                 document.getString("name"),
                 document.getString("email"),
@@ -51,3 +51,5 @@ public class Student {
         return id;
     }
 }
+
+

@@ -1,22 +1,132 @@
 package com.example.controllers;
 
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoDatabase;
+// import com.example.models.Student;
+// import com.example.models.Student;
+// import com.example.models.Teacher;
+import com.example.models.User;
+import com.mongodb.client.*;
+import com.mongodb.client.result.UpdateResult;
+import org.bson.Document;
+import org.mindrot.jbcrypt.BCrypt;
 
 public class MongoDBConnector {
     private static MongoClient mongoClient;
     private static MongoDatabase database;
+    // private static Student student;
+    // private static Teacher teacher;
+    private static MongoCollection<Document> studentsCollection;
+    private static MongoCollection<Document> teachersCollection;
 
+    // Flexible connection method supporting multiple collections
     public static MongoDatabase connect(String connectionString) {
-        mongoClient = MongoClients.create(connectionString);
-        database = mongoClient.getDatabase("TestingApp");
-        System.out.println("Connected to MongoDB successfully!");
+        try {
+            mongoClient = MongoClients.create(connectionString);
+            database = mongoClient.getDatabase("EduTrack");
+
+            // Initialize both students and teachers collections
+            studentsCollection = database.getCollection("students");
+            teachersCollection = database.getCollection("teachers");
+
+            System.out.println("Connected to MongoDB successfully!");
+            return database;
+        } catch (Exception e) {
+            System.err.println("MongoDB Connection Error: " + e.getMessage());
+            throw new RuntimeException("Failed to connect to MongoDB", e);
+        }
+    }
+
+    public static MongoDatabase getDatabase() {
         return database;
     }
 
-    // we dont actually need this one since we already return the database flmethod li qbel but meeeeh
-    public static MongoDatabase getDatabase() {
-        return database;
+    public static MongoCollection<Document> getStudentsCollection() {
+        return studentsCollection;
+    }
+
+    public static MongoCollection<Document> getTeachersCollection() {
+        return teachersCollection;
+    }
+
+    // User registration method with role-based collection insertion
+    public static void registerUser(User user, String role) {
+        String salt = BCrypt.gensalt(12);
+        String hashedPassword = BCrypt.hashpw(user.getPassword(), salt);
+
+        Document userDocument = new Document(
+                "name", user.getName())
+                .append("email", user.getEmail())
+                .append("securityQuestion", user.getSecurityQuestion())
+                .append("securityAnswer", user.getSecurityAnswer())
+                .append("type", role)
+                .append("password", hashedPassword);
+
+        // Choose collection based on role
+        if ("Student".equals(role)) {
+
+            studentsCollection.insertOne(userDocument);
+            System.out.println("Student registered successfully!");
+        } else if ("Teacher".equals(role)) {
+            teachersCollection.insertOne(userDocument);
+            System.out.println("Teacher registered successfully!");
+        } else {
+            throw new IllegalArgumentException("Invalid user role");
+        }
+    }
+
+    // Login verification with role-based collection checking
+    public static boolean verifyLogin(String email, String password, String role) {
+        MongoCollection<Document> collection = "Student".equals(role) ? studentsCollection : teachersCollection;
+
+        Document query = new Document("email", email);
+        Document result = collection.find(query).first();
+
+        if (result != null) {
+            String storedHashedPassword = result.getString("password");
+            String hashedPassword = BCrypt.hashpw(password, storedHashedPassword);
+            return storedHashedPassword.equals(hashedPassword);
+        }
+        return false;
+    }
+
+    // Find user by email in the appropriate collection
+    public static User findUserByEmail(String email, String role) {
+        MongoCollection<Document> collection = "Student".equals(role) ? studentsCollection : teachersCollection;
+        return User.fromDocument(collection.find(new Document("email", email)).first());
+    }
+
+    public static boolean verifySecurityAnswer(String email, String question, String answer, String role) {
+        User user = findUserByEmail(email, role);
+        if (user != null && user.getSecurityQuestion().equals(question)
+                && user.getSecurityAnswer().equalsIgnoreCase(answer)) {
+            return true;
+        }
+        return false;
+    }
+
+    // Password reset method for the specific role's collection
+    public static void resetPassword(String email, String newPassword, String role) {
+        MongoCollection<Document> collection = "Student".equals(role) ? studentsCollection : teachersCollection;
+
+        String salt = BCrypt.gensalt(12);
+        String hashedPassword = BCrypt.hashpw(newPassword, salt);
+
+        UpdateResult result = collection.updateOne(
+                new Document("email", email),
+                new Document("$set", new Document("password", hashedPassword)));
+
+        // return result.getModifiedCount() > 0;
+        if (result.getModifiedCount() > 0) {
+            System.out.println("Password reset successfully for email: " + email);
+        } else {
+            System.out.println("No user found with email: " + email);
+        }
+    }
+
+    // Close database connection
+    public static void closeConnection() {
+        if (mongoClient != null) {
+            mongoClient.close();
+            System.out.println("MongoDB connection closed.");
+        }
     }
 }

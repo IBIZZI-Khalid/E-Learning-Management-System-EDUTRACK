@@ -1,15 +1,18 @@
 package com.example.controllers;
 
 import com.example.MainApp;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-import org.bson.Document;
-import javafx.geometry.Insets;
+import com.example.models.User;
+// import com.example.models.User;
+// import com.example.controllers.MongoDBConnector;
+// import com.mongodb.client.MongoCollection;
+// import com.mongodb.client.MongoDatabase;
+// import org.bson.Document;
+// import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.scene.paint.Color;
+// import javafx.scene.text.Font;
+// import javafx.scene.text.FontWeight;
+// import javafx.scene.paint.Color;
 
 public class SignupPage {
 
@@ -22,112 +25,159 @@ public class SignupPage {
     }
 
     private void createView() {
+        // Modify the view container to use the new styles
+        view = new VBox(15);
+        view.getStyleClass().addAll("auth-container", "auth-background-animated");
+        view.setMaxWidth(400);
+        view.setMinWidth(400);
+        view.setPrefHeight(600); // Add height preference
+
         // Title
         Label titleLabel = new Label("Create Account");
-        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 24));
-        titleLabel.setTextFill(Color.DARKBLUE);
+        titleLabel.getStyleClass().add("auth-title");
 
         // Name Field
         TextField nameField = new TextField();
         nameField.setPromptText("Name");
-        nameField.setStyle("-fx-background-radius: 5; -fx-padding: 10px;");
+        nameField.getStyleClass().add("auth-text-field");
 
         // Email Field
         TextField emailField = new TextField();
         emailField.setPromptText("Email");
-        emailField.setStyle("-fx-background-radius: 5; -fx-padding: 10px;");
+        emailField.getStyleClass().add("auth-text-field");
 
         // Password Field
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText("Password");
-        passwordField.setStyle("-fx-background-radius: 5; -fx-padding: 10px;");
+        passwordField.getStyleClass().add("auth-text-field");
 
         // Confirm Password Field
         PasswordField confirmPasswordField = new PasswordField();
         confirmPasswordField.setPromptText("Confirm Password");
-        confirmPasswordField.setStyle("-fx-background-radius: 5; -fx-padding: 10px;");
+        confirmPasswordField.getStyleClass().add("auth-text-field");
+
+        // Security Question Dropdown
+        ComboBox<String> securityQuestionComboBox = new ComboBox<>();
+        securityQuestionComboBox.getItems().addAll(
+                "What was your first pet's name?",
+                "In what city were you born?",
+                "What is your mother's maiden name?");
+        securityQuestionComboBox.setPromptText("Select Security Question");
+        securityQuestionComboBox.getStyleClass().add("auth-combo-box");
+
+        // Security Answer Field
+        TextField securityAnswerField = new TextField();
+        securityAnswerField.setPromptText("Security Answer");
+        securityAnswerField.getStyleClass().add("auth-text-field");
 
         // Role ComboBox
         ComboBox<String> roleComboBox = new ComboBox<>();
         roleComboBox.getItems().addAll("Student", "Teacher");
         roleComboBox.setPromptText("Select Role");
-        roleComboBox.setStyle("-fx-background-radius: 5;");
+        roleComboBox.getStyleClass().add("auth-combo-box");
+
+        // Wrap the view in a card for the frosted glass effect
+        VBox authCard = new VBox(15);
+        authCard.getStyleClass().add("auth-card");
 
         // Signup Button
         Button signupButton = new Button("Sign Up");
-        signupButton.setStyle("-fx-background-color: darkblue; -fx-text-fill: white; -fx-background-radius: 5;");
+        signupButton.getStyleClass().add("auth-button");
         signupButton.setOnAction(e -> handleSignup(
-            nameField.getText(), 
-            emailField.getText(), 
-            passwordField.getText(),
-            confirmPasswordField.getText(), 
-            roleComboBox.getValue()
-        ));
+                nameField.getText(),
+                emailField.getText(),
+                passwordField.getText(),
+                confirmPasswordField.getText(),
+                securityQuestionComboBox.getValue(),
+                securityAnswerField.getText(),
+                roleComboBox.getValue()));
 
         // Login Link
         Hyperlink loginLink = new Hyperlink("Already have an account? Login");
+        loginLink.getStyleClass().add("auth-hyperlink");
         loginLink.setOnAction(e -> mainApp.showLoginPage());
 
-        // Layout
-        view = new VBox(15);
-        view.setPadding(new Insets(20));
-        view.setStyle("-fx-background-color: #f0f4f8;");
-        view.getChildren().addAll(
-            titleLabel, 
-            nameField, 
-            emailField, 
-            passwordField, 
-            confirmPasswordField, 
-            roleComboBox,
-            signupButton,
-            loginLink
-        );
-        view.setMaxWidth(300);
+        view.getStylesheets().add(getClass().getResource("/css/authentication.css").toExternalForm());
+
+        // Assemble the card
+        authCard.getChildren().addAll(
+                titleLabel,
+                nameField,
+                emailField,
+                passwordField,
+                confirmPasswordField,
+                securityQuestionComboBox,
+                securityAnswerField,
+                roleComboBox,
+                signupButton,
+                loginLink);
+
+        // Add the card to the main view
+        view.getChildren().add(authCard);
     }
 
-    private void handleSignup(String name, String email, String password, String confirmPassword, String role) {
-        // Validation
-        if (name.isEmpty() || email.isEmpty() || password.isEmpty() || role == null) {
-            showAlert(Alert.AlertType.ERROR, "Sign Up Error", "Incomplete Information", "Please fill in all fields.");
-            return;
+    private boolean validateInputs(String name, String email, String password,
+            String confirmPassword, String securityQuestion,
+            String securityAnswer, String role) {
+        // Comprehensive input validation
+        if (name.isEmpty() || email.isEmpty() || password.isEmpty() ||
+                confirmPassword.isEmpty() || securityQuestion == null ||
+                securityAnswer.isEmpty() || role == null) {
+            showAlert(Alert.AlertType.ERROR, "Sign Up Error",
+                    "Incomplete Information", "Please fill in all fields.");
+            return false;
         }
 
+        // Email domain validation
+        if (!email.endsWith("@uiz.ac.ma")) {
+            showAlert(Alert.AlertType.ERROR, "Email Error",
+                    "Invalid Email", "Please use a university email.");
+            return false;
+        }
+
+        // Password matching
         if (!password.equals(confirmPassword)) {
-            showAlert(Alert.AlertType.ERROR, "Sign Up Error", "Password Mismatch", "Passwords do not match. Please try again.");
-            return;
+            showAlert(Alert.AlertType.ERROR, "Password Error",
+                    "Password Mismatch", "Passwords do not match.");
+            return false;
         }
 
-        // Connect to MongoDB and insert the record
-        try {
-            MongoDatabase database = MongoDBConnector.getDatabase();
-            if ("Student".equals(role)) {
-                MongoCollection<Document> studentsCollection = database.getCollection("students");
+        // Password strength check
+        if (password.length() < 8) {
+            showAlert(Alert.AlertType.ERROR, "Password Error",
+                    "Weak Password", "Password must be at least 8 characters long.");
+            return false;
+        }
 
-                Document studentDoc = new Document("name", name)
-                        .append("email", email)
-                        .append("password", password);
+        return true;
+    }
 
-                studentsCollection.insertOne(studentDoc);
+    private void handleSignup(String name, String email, String confirmPassword,
+            String password, String securityQuestion,
+            String securityAnswer, String role) {
+        // Validation
+        if (validateInputs(name, email, password, confirmPassword,
+                securityQuestion, securityAnswer, role)) {
+            // Connect to MongoDB and insert the record
+            try {
+                // MongoDatabase database = MongoDBConnector.getDatabase();
+                User newUser = new User(null, name, email, password,
+                        securityQuestion, securityAnswer, role);
 
-                Document insertedStudent = studentsCollection.find(new Document("email", email)).first();
-                if (insertedStudent != null) {
-                    String studentId = insertedStudent.getObjectId("_id").toHexString();
-                    mainApp.showStudentDashboard(studentId);
+                // Register user using MongoDBConnector
+                MongoDBConnector.registerUser(newUser, role);
+
+                // Navigate to appropriate dashboard
+                if ("Student".equals(role)) {
+                    mainApp.showStudentDashboard(newUser.getId());
+                } else {
+                    mainApp.showTeacherDashboard(email);
                 }
-
-            } else if ("Teacher".equals(role)) {
-                MongoCollection<Document> teachersCollection = database.getCollection("teachers");
-
-                Document teacherDoc = new Document("name", name)
-                        .append("email", email)
-                        .append("password", password);
-
-                teachersCollection.insertOne(teacherDoc);
-                mainApp.showTeacherDashboard(email);
+            } catch (Exception e) {
+                showAlert(Alert.AlertType.ERROR, "Sign Up Error", "Registration Failed",
+                        "An error occurred during registration.");
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Sign Up Error", "Registration Failed", "An error occurred during registration.");
-            e.printStackTrace();
         }
     }
 
