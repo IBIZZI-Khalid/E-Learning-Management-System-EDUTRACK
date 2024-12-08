@@ -83,8 +83,8 @@ public class MongoDBConnector {
     public static boolean verifyLogin(String email, String password, String role) {
         MongoCollection<Document> collection = "Student".equals(role) ? studentsCollection : teachersCollection;
 
-        Document query = new Document("email", email);
-        Document result = collection.find(query).first();
+        // Document query = new Document("email", email);
+        Document result = collection.find(new Document("email", email)).first();
 
         if (result != null) {
             String storedHashedPassword = result.getString("password");

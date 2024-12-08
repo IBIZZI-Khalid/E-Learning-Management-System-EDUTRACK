@@ -1,0 +1,63 @@
+/* Course Details View Specific Styles */
+.course-details-container {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 15;
+    -fx-padding: 25;
+    -fx-spacing: 15;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.15), 10, 0, 0, 2);
+    -fx-border-color: #dcdcdc;
+    -fx-border-width: 2px;
+    -fx-border-radius: 15;
+}
+
+.course-details-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+    -fx-padding: 0 0 10 0;
+}
+
+.course-details-description {
+    -fx-font-size: 16px;
+    -fx-text-fill: #7f8c8d;
+    -fx-line-spacing: 5;
+    -fx-wrap-text: true;
+    -fx-padding: 0 0 15 0;
+}
+
+.course-details-access-label {
+    -fx-font-size: 14px;
+    -fx-text-fill: #3498db;
+    -fx-padding: 5 0;
+}
+
+.course-details-progress-bar {
+    -fx-accent: #27ae60;
+    -fx-background-color: #e0e0e0;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-pref-height: 20;
+}
+
+.course-details-pdf-button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-padding: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.15), 5, 0, 0, 2);
+}
+
+.course-details-pdf-button:hover {
+    -fx-background-color: #2980b9;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 10, 0, 0, 3);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
+.course-details-action-section {
+    -fx-spacing: 15;
+    -fx-alignment: center-left;
+    -fx-padding: 15 0 0 0;
+}

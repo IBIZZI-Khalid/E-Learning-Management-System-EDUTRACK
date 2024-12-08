@@ -4,6 +4,7 @@ package com.example.controllers;
 import java.util.List;
 
 import org.bson.Document;
+import org.bson.types.ObjectId;
 
 import com.example.MainApp;
 import com.example.models.Announcement;
@@ -322,21 +323,32 @@ public class StudentDashboard {
     }
 
     private void showError(String title, String content) {
+        System.out.println("error content: " + content);
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
         alert.setContentText(content);
         alert.showAndWait();
     }
 
-    private CourseCard createCourseCard(String title, String description, double progress, String courseId) {
+    private CourseCard createCourseCard(String title, String description, double progress, String  courseId) {
+        // String courseIdString = courseId instanceof ObjectId 
+        // ? ((ObjectId) courseId).toString() 
+        // : courseId.toString();
+        
         CourseCard courseCard = new CourseCard(title, description, progress, courseId);
-
         // Add an event handler to initialize progress when the card is clicked
         courseCard.setOnMouseClicked(event -> {
             try {
                 // Initialize course progress when card is clicked
                 courseService.initializeCourseProgress(studentId, courseCard.getCourseId()); // courseId howa nit
-                                                                                             // courseCard.getCourseId()
+
+                Course selectedCourse = courseService.getCourseById(courseCard.getCourseId());
+                CourseDetailsView courseDetailsView = new CourseDetailsView();
+                courseDetailsView.updateCourseDetails(selectedCourse); // courseCard.getCourseId()
+
+                // Clear previous content and add the new course details view
+                contentArea.getChildren().clear();
+                contentArea.getChildren().add(courseDetailsView);
             } catch (Exception e) {
                 showError("Course Initialization Error", e.getMessage());
             }

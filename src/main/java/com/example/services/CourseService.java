@@ -25,6 +25,7 @@ public class CourseService {
         this.studentCollection = database.getCollection("students");
         this.teacherCollection = database.getCollection("teachers");
     }
+
     public MongoCollection<Document> getCourseCollection() {
         return courseCollection;
     }
@@ -85,8 +86,9 @@ public class CourseService {
                         doc.getObjectId("_id").toString(), // Course ID
                         doc.getString("title"), // Title
                         doc.getString("description"), // Description
-                        // doc.getDouble("progressPercentage"), // Average progress of students (optional)
-                        progressPercentage ,
+                        // doc.getDouble("progressPercentage"), // Average progress of students
+                        // (optional)
+                        progressPercentage,
                         doc.getBoolean("isOpenAccess"));
 
                 course.setTeacherEmail(doc.getString(teacherEmail));
@@ -120,8 +122,7 @@ public class CourseService {
                                     doc.getString("email"),
                                     doc.getString("securityQuestion"),
                                     doc.getString("securityAnswer"),
-                                    doc.getString("password")
-                                    );
+                                    doc.getString("password"));
                             students.add(student);
                         });
             }
@@ -131,7 +132,8 @@ public class CourseService {
         }
     }
 
-    public String createCourse(String title, String description, String teacherEmail,String PDFpath[] , boolean isOpenAccess) {
+    public String createCourse(String title, String description, String teacherEmail, String PDFpath[],
+            boolean isOpenAccess) {
         try {
             Document course = new Document()
                     .append("title", title)
@@ -161,16 +163,16 @@ public class CourseService {
             if (student != null && student.containsKey("enrolledCourses")) {
                 enrolledCourseIds = student.getList("enrolledCourses", String.class);
             }
-            
 
             // Fetch open-access courses and the student's enrolled courses
             courseCollection.find(Filters.or(
                     Filters.eq("isOpenAccess", true),
                     Filters.in("_id", enrolledCourseIds))).forEach(doc -> {
-                        // first lets find course percentage hiatch fih error ma3rfoch program wach int wlla double 
+                        // first lets find course percentage hiatch fih error ma3rfoch program wach int
+                        // wlla double
                         double progressPercentage = doc.get("progressPercentage") instanceof Integer
-                        ? doc.getInteger("progressPercentage").doubleValue()
-                        : doc.getDouble("progressPercentage");
+                                ? doc.getInteger("progressPercentage").doubleValue()
+                                : doc.getDouble("progressPercentage");
 
                         Course course = new Course(
                                 doc.getObjectId("_id").toString(),
@@ -223,6 +225,29 @@ public class CourseService {
 
         } catch (Exception e) {
             throw new RuntimeException("Error initializing course progress: " + e.getMessage(), e);
+        }
+    }
+
+    public Course getCourseById(String courseId) {
+        try {
+            ObjectId objectId = new ObjectId(courseId);
+            Document courseDoc = courseCollection.find(Filters.eq("_id", objectId)).first();
+            if (courseDoc == null) {
+                throw new RuntimeException("Course not found with ID: " + courseId);
+            }
+
+            // Explicitly extract and convert _id to String
+            ObjectId docId = courseDoc.getObjectId("_id");
+            return new Course(
+                    // courseDoc.getString("_id"),
+                    docId.toString(),
+                    courseDoc.getString("title"),
+                    courseDoc.getString("description"),
+                    // courseDoc.getDouble("teacherEmail"),
+                    courseDoc.getDouble("progressPercentage"),
+                    courseDoc.getBoolean("isOpenAccess"));
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid course ID format: " + courseId);
         }
     }
 

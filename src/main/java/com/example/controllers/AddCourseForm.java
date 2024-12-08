@@ -20,8 +20,8 @@ import java.util.Date;
 
 public class AddCourseForm extends Stage {
     public AddCourseForm(MongoDatabase database, CourseService courseService, String teacherEmail) {
-        // Create a BorderPane for more flexible full-screen layout
-        BorderPane mainLayout = new BorderPane();
+        // Create a StackPane instead of BorderPane for better centering
+        StackPane mainLayout = new StackPane();
         mainLayout.setStyle("-fx-background-color: #f4f4f9;");
 
         // Create a VBox for the form content with improved spacing and padding
@@ -37,8 +37,9 @@ public class AddCourseForm extends Stage {
         scrollPane.setFitToHeight(true);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
-        // Center the form in the BorderPane
-        mainLayout.setCenter(scrollPane);
+        // Use StackPane to center the ScrollPane
+        StackPane.setAlignment(scrollPane, Pos.CENTER);
+        mainLayout.getChildren().add(scrollPane);
 
         // Module title label
         Label moduleLabel = new Label("Teacher's email : " + teacherEmail);

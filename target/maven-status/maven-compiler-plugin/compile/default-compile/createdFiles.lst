@@ -3,6 +3,7 @@ com\example\controllers\LoginPage.class
 com\example\MainApp.class
 com\example\services\CourseService.class
 com\example\controllers\SignupPage.class
+com\example\controllers\CourseDetailsView.class
 com\example\controllers\LoginPage$1.class
 com\example\models\Student.class
 com\example\models\User.class

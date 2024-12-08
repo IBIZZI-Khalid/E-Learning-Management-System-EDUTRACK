@@ -17,8 +17,14 @@
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.3), 20, 0, 0, 10);
     -fx-padding: 30;
     -fx-spacing: 15;
-    -fx-min-width: 350;
-    -fx-max-width: 400;
+    
+        /* -fx-min-width: 30%; 
+        -fx-max-width: 70%; 
+        -fx-min-height: 300px;
+        -fx-max-height: 80%;
+        -fx-padding: 30;
+        -fx-spacing: 15; */
+    
 }
 
 /* Title Styling */
@@ -36,7 +42,7 @@
     -fx-background-radius: 8;
     -fx-border-radius: 8;
     -fx-border-color: rgba(255, 255, 255, 0.2);
-    -fx-text-fill: white;
+    -fx-text-fill: #102144b4;
     -fx-prompt-text-fill: #8c94a3;
     -fx-padding: 10;
     -fx-effect: innershadow(gaussian, rgba(0, 0, 0, 0.2), 10, 0, 0, 0);
@@ -44,6 +50,8 @@
 
 .auth-text-field:focused {
     -fx-border-color: #4b6cb7;
+    -fx-background-color: #102144b4;
+    -fx-text-fill: white;
     -fx-effect: dropshadow(gaussian, rgba(75, 108, 183, 0.5), 10, 0, 0, 0);
 }
 
@@ -101,6 +109,7 @@
         -fx-translate-y: 50;
         opacity: 0;
     }
+
     to {
         -fx-translate-y: 0;
         opacity: 1;
@@ -118,9 +127,11 @@
     0% {
         -fx-background-position: 0% 50%;
     }
+
     50% {
         -fx-background-position: 100% 50%;
     }
+
     100% {
         -fx-background-position: 0% 50%;
     }

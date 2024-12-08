@@ -10,6 +10,7 @@ import javafx.concurrent.Task;
 // import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 // import javafx.scene.layout.HBox;
 import javafx.scene.text.Font;
@@ -29,8 +30,12 @@ public class LoginPage {
     private void createView() {
         view = new VBox(15);
         view.getStyleClass().addAll("auth-container", "auth-background-animated");
-        view.setMaxWidth(400);
-        view.setMinWidth(400);
+        
+        // Ensure computed sizing for responsiveness
+        view.setPrefWidth(Region.USE_COMPUTED_SIZE);
+        view.setPrefHeight(Region.USE_COMPUTED_SIZE);
+        view.setMaxWidth(Region.USE_COMPUTED_SIZE);
+        view.setMaxHeight(Region.USE_COMPUTED_SIZE);
 
         // Title
         Label titleLabel = new Label("Welcome Back");
@@ -87,8 +92,8 @@ public class LoginPage {
 
         // Add the card to the main view
         view.getChildren().add(authCard);
-        view.setMaxWidth(600);
-        view.setMaxHeight(400);
+        // view.setMaxWidth(600);
+        // view.setMaxHeight(400);
     }
 
     private void handleLogin(String email, String password, String role) {

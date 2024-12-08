@@ -40,19 +40,22 @@ public class MainApp extends Application {
 
     public void showSignupPage() {
         SignupPage signupPage = new SignupPage(this);
-        Scene scene = new Scene(signupPage.getView(), 400, 300);
+        Scene scene = new Scene(signupPage.getView());
         primaryStage.setScene(scene);
         primaryStage.setTitle("Sign Up");
+        primaryStage.sizeToScene(); // Automatically adjust window size to fit content
         primaryStage.show();
     }
-
+    
     public void showLoginPage() {
-        LoginPage loginpage = new LoginPage(this);
-        Scene scene = new Scene(loginpage.getView(), 400, 300);
+        LoginPage loginPage = new LoginPage(this);
+        Scene scene = new Scene(loginPage.getView());
         primaryStage.setScene(scene);
         primaryStage.setTitle("Login");
+        primaryStage.sizeToScene(); // Automatically adjust window size to fit content
         primaryStage.show();
     }
+    
 
     public void showStudentDashboard(String studentId) {
         studentDashboard = new StudentDashboard(

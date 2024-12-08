@@ -2,6 +2,8 @@ package com.example.controllers;
 
 import com.example.MainApp;
 import com.example.models.User;
+
+import javafx.geometry.Insets;
 // import com.example.models.User;
 // import com.example.controllers.MongoDBConnector;
 // import com.mongodb.client.MongoCollection;
@@ -9,6 +11,7 @@ import com.example.models.User;
 // import org.bson.Document;
 // import javafx.geometry.Insets;
 import javafx.scene.control.*;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 // import javafx.scene.text.Font;
 // import javafx.scene.text.FontWeight;
@@ -18,6 +21,7 @@ public class SignupPage {
 
     private MainApp mainApp;
     private VBox view;
+    private ScrollPane mainScrollPane;
 
     public SignupPage(MainApp mainApp) {
         this.mainApp = mainApp;
@@ -25,12 +29,22 @@ public class SignupPage {
     }
 
     private void createView() {
+
         // Modify the view container to use the new styles
         view = new VBox(15);
         view.getStyleClass().addAll("auth-container", "auth-background-animated");
-        view.setMaxWidth(400);
-        view.setMinWidth(400);
-        view.setPrefHeight(600); // Add height preference
+        view.setPrefWidth(Region.USE_COMPUTED_SIZE);
+        view.setMaxWidth(600);
+        view.setPrefHeight(Region.USE_COMPUTED_SIZE);
+        view.setMaxHeight(800);
+
+         // Add padding for better spacing
+        view.setPadding(new Insets(20));
+
+        // Create a card to hold authentication elements
+        VBox authCard = new VBox(15);
+        authCard.getStyleClass().add("auth-card");
+        
 
         // Title
         Label titleLabel = new Label("Create Account");
@@ -76,9 +90,7 @@ public class SignupPage {
         roleComboBox.setPromptText("Select Role");
         roleComboBox.getStyleClass().add("auth-combo-box");
 
-        // Wrap the view in a card for the frosted glass effect
-        VBox authCard = new VBox(15);
-        authCard.getStyleClass().add("auth-card");
+        
 
         // Signup Button
         Button signupButton = new Button("Sign Up");
@@ -114,6 +126,24 @@ public class SignupPage {
 
         // Add the card to the main view
         view.getChildren().add(authCard);
+
+        // Create ScrollPane to enable scrolling and adaptive sizing
+        mainScrollPane = new ScrollPane(view);
+        mainScrollPane.setFitToWidth(true);   // Adjust width automatically
+        mainScrollPane.setFitToHeight(true);  // Allow vertical scrolling if needed
+        
+        // Set minimum and maximum constraints
+        mainScrollPane.setMinWidth(350);      // Minimum reasonable width
+        mainScrollPane.setMaxWidth(600);      // Maximum reasonable width
+        mainScrollPane.setPrefWidth(450);     // Preferred default width
+        
+        // Vertical sizing
+        mainScrollPane.setMinHeight(500);     // Minimum height
+        mainScrollPane.setMaxHeight(800);     // Maximum height
+        
+        // Ensure smooth scrolling and no horizontal scrollbar
+        mainScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        mainScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
     }
 
     private boolean validateInputs(String name, String email, String password,
@@ -169,7 +199,9 @@ public class SignupPage {
 
                 // Navigate to appropriate dashboard
                 if ("Student".equals(role)) {
-                    mainApp.showStudentDashboard(newUser.getId());
+                    // we gotta find the email value so  that the welcome page is showen correctly
+                    User foundUser = MongoDBConnector.findUserByEmail(email, role);
+                    mainApp.showStudentDashboard(foundUser.getId());
                 } else {
                     mainApp.showTeacherDashboard(email);
                 }

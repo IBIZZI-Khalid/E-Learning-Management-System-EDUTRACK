@@ -13,3 +13,14 @@ For Teachers: View course statistics, student performance, and manage course enr
 Database Integration: Backed by MongoDB for storing user data, course content, progress metrics, and announcements.
 
 The system is built using JavaFX for the frontend and leverages MongoDB for data persistence, providing a scalable, intuitive platform for modern education needs.
+
+
+
+to start the app :
+C:\mongodb\bin>mongod --dbpath C:\mongodb\data\db
+
+and keep it running thats the server its self now 
+
+for running the jfx : 
+C:\Users\hp\YouTubeScraper> mvn javafx:run
+
