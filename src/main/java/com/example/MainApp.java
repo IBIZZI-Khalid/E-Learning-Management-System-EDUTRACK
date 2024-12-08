@@ -15,7 +15,7 @@ import javafx.stage.Stage;
 public class MainApp extends Application {
     private Stage primaryStage;
     private StudentDashboard studentDashboard;
-    private TeacherDashboard teacherDashboard;
+    private TeacherDashboard teacherDashboard; 
     private MongoDatabase mongoDatabase;
 
     @Override
@@ -33,6 +33,9 @@ public class MainApp extends Application {
             e.printStackTrace();
 
         }
+    }
+    public MongoDatabase getMongoDatabase() {
+        return mongoDatabase;
     }
 
     public void showSignupPage() {

@@ -16,6 +16,7 @@ public class MongoDBConnector {
     // private static Teacher teacher;
     private static MongoCollection<Document> studentsCollection;
     private static MongoCollection<Document> teachersCollection;
+    private static MongoCollection<Document> coursCollection;
 
     // Flexible connection method supporting multiple collections
     public static MongoDatabase connect(String connectionString) {
@@ -26,6 +27,7 @@ public class MongoDBConnector {
             // Initialize both students and teachers collections
             studentsCollection = database.getCollection("students");
             teachersCollection = database.getCollection("teachers");
+            coursCollection = database.getCollection("courses");
 
             System.out.println("Connected to MongoDB successfully!");
             return database;
@@ -45,6 +47,10 @@ public class MongoDBConnector {
 
     public static MongoCollection<Document> getTeachersCollection() {
         return teachersCollection;
+    }
+
+    public  MongoCollection<Document> getCoursCollection() {
+        return coursCollection;
     }
 
     // User registration method with role-based collection insertion

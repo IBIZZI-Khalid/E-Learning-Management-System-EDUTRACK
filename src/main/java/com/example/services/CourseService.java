@@ -25,6 +25,9 @@ public class CourseService {
         this.studentCollection = database.getCollection("students");
         this.teacherCollection = database.getCollection("teachers");
     }
+    public MongoCollection<Document> getCourseCollection() {
+        return courseCollection;
+    }
 
     // Add this method to the CourseService class
     public double getAverageStudentProgressForCourse(String courseId) {
@@ -128,13 +131,14 @@ public class CourseService {
         }
     }
 
-    public String createCourse(String title, String description, String teacherEmail, boolean isOpenAccess) {
+    public String createCourse(String title, String description, String teacherEmail,String PDFpath[] , boolean isOpenAccess) {
         try {
             Document course = new Document()
                     .append("title", title)
                     .append("description", description)
                     .append("teacherEmail", teacherEmail)
                     .append("progressPercentage", 0.0) // Start with 0 progress
+                    .append("pdfPath", PDFpath[0])
                     .append("isOpenAccess", isOpenAccess);
 
             courseCollection.insertOne(course);

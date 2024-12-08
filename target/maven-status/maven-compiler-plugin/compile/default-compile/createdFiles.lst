@@ -6,6 +6,7 @@ com\example\controllers\SignupPage.class
 com\example\controllers\LoginPage$1.class
 com\example\models\Student.class
 com\example\models\User.class
+com\example\controllers\AddCourseForm.class
 com\example\models\Course.class
 com\example\controllers\LogOut.class
 com\example\controllers\StudentDashboard.class

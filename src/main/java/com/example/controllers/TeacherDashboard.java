@@ -7,11 +7,13 @@ import com.example.models.Student;
 import com.example.services.AnnouncementService;
 import com.example.services.CourseService;
 import com.example.views.components.CourseCard;
+// import com.example.controllers.MongoDBConnector;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -26,6 +28,7 @@ import org.bson.Document;
 public class TeacherDashboard {
 
     private MainApp mainApp;
+    private MongoDatabase database;
     private final String teacherEmail;
     private BorderPane view;
     private VBox sidebar;
@@ -36,6 +39,7 @@ public class TeacherDashboard {
 
     public TeacherDashboard(MainApp mainApp, MongoDatabase database, String teacherEmail) {
         this.mainApp = mainApp;
+        this.database = database;
         this.teacherEmail = teacherEmail;
         this.courseService = new CourseService(database);
         this.announcementService = new AnnouncementService(database);
@@ -43,6 +47,10 @@ public class TeacherDashboard {
 
         createView();
     }
+    public MongoDatabase getDatabase() {
+        return database;
+    }
+    
 
     private void createView() {
         view = new BorderPane();
@@ -262,13 +270,27 @@ public class TeacherDashboard {
         return profile;
     }
 
+    
     private void showCoursesView() {
         VBox coursesView = new VBox(10);
         coursesView.setPadding(new Insets(20));
+
         try {
             Button createCourseBtn = new Button("Create New Course");
-            createCourseBtn.setOnAction(e -> showCreateCourseView());
+            createCourseBtn.setOnAction(e -> {
+                // showCreateCourseView()
+                AddCourseForm addCourseForm = new AddCourseForm(getDatabase(),courseService, teacherEmail); 
+                addCourseForm.show();
+            }
+            );
+
+            // Create top bar for the button    
+            HBox topBar = new HBox(createCourseBtn);
+            topBar.setStyle("-fx-background-color: #3498db; -fx-padding: 10;");
+            topBar.setAlignment(Pos.CENTER_RIGHT);
+
             coursesView.getChildren().add(createCourseBtn);
+
 
             List<Course> courses = courseService.getCoursesByTeacher(teacherEmail);
             // Fetch courses created by this teacher
@@ -281,19 +303,27 @@ public class TeacherDashboard {
 
                 ));
             }
-
+            // Wrap course cards in a ScrollPane
+            ScrollPane scrollPane = new ScrollPane(coursesView);
+            scrollPane.setFitToWidth(true);
+            scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+            scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
             
-
+            VBox content = new VBox(topBar,scrollPane);
+            content.setSpacing(10);
+        
             contentArea.getChildren().clear();
-            contentArea.getChildren().add(new ScrollPane(coursesView));
+            contentArea.getChildren().add(content);
         } catch (Exception e) {
             System.out.println("Error loading courses: " + e.getMessage());
         }
     }
+    
 
     private CourseCard createCourseCard(String title, String description, double progress, String courseId) {
         return new CourseCard(title, description, progress, courseId);
     }
+    
     private void showManageStudentsView() {
         VBox studentsView = new VBox(15); // Main container for student cards
         studentsView.setPadding(new Insets(20));
@@ -336,50 +366,50 @@ public class TeacherDashboard {
         }
     }
     
-    private void showCreateCourseView() {
-        VBox createCourseView = new VBox(10);
-        createCourseView.setPadding(new Insets(20));
+    // private void showCreateCourseView() {
+    //     VBox createCourseView = new VBox(10);
+    //     createCourseView.setPadding(new Insets(20));
 
-        TextField titleField = new TextField();
-        titleField.setPromptText("Course Title");
+    //     TextField titleField = new TextField();
+    //     titleField.setPromptText("Course Title");
 
-        TextArea descriptionField = new TextArea();
-        descriptionField.setPromptText("Course Description");
+    //     TextArea descriptionField = new TextArea();
+    //     descriptionField.setPromptText("Course Description");
 
-        // Add checkbox for "Open Access"
-        CheckBox openAccessCheckbox = new CheckBox("Make this course open to all students");
-        openAccessCheckbox.setSelected(false); // Default to restricted
+    //     // Add checkbox for "Open Access"
+    //     CheckBox openAccessCheckbox = new CheckBox("Make this course open to all students");
+    //     openAccessCheckbox.setSelected(false); // Default to restricted
 
-        Button saveBtn = new Button("Save Course");
-        saveBtn.setOnAction(e -> {
-            try {
-                String title = titleField.getText();
-                String description = descriptionField.getText();
-                boolean isOpenAccess = openAccessCheckbox.isSelected();
+    //     Button saveBtn = new Button("Save Course");
+    //     saveBtn.setOnAction(e -> {
+    //         try {
+    //             String title = titleField.getText();
+    //             String description = descriptionField.getText();
+    //             boolean isOpenAccess = openAccessCheckbox.isSelected();
 
-                if (title.isEmpty() || description.isEmpty()) {
-                    showError("Validation Error", "Title and description are required");
-                    return;
-                }
+    //             if (title.isEmpty() || description.isEmpty()) {
+    //                 showError("Validation Error", "Title and description are required");
+    //                 return;
+    //             }
 
-                String courseId = courseService.createCourse(title, description, teacherEmail, isOpenAccess);
-                showSuccess("Course Created", "Course has been successfully created with ID: " + courseId);
-                showCoursesView(); // Refresh courses view
-            } catch (RuntimeException ex) {
-                showError("Error creating course", ex.getMessage());
-            }
-        });
+    //             String courseId = courseService.createCourse(title, description, teacherEmail, isOpenAccess);
+    //             showSuccess("Course Created", "Course has been successfully created with ID: " + courseId);
+    //             showCoursesView(); // Refresh courses view
+    //         } catch (RuntimeException ex) {
+    //             showError("Error creating course", ex.getMessage());
+    //         }
+    //     });
 
-        createCourseView.getChildren().addAll(
-                new Label("Create New Course"),
-                titleField,
-                descriptionField,
-                openAccessCheckbox,
-                saveBtn);
+    //     createCourseView.getChildren().addAll(
+    //             new Label("Create New Course"),
+    //             titleField,
+    //             descriptionField,
+    //             openAccessCheckbox,
+    //             saveBtn);
 
-        contentArea.getChildren().clear();
-        contentArea.getChildren().add(createCourseView);
-    }
+    //     contentArea.getChildren().clear();
+    //     contentArea.getChildren().add(createCourseView);
+    // }
 
     private void showAnnouncementsView() {
         VBox mainView = new VBox(20); // Main container for the entire announcements view
