@@ -11,7 +11,7 @@ public class Course {
     private boolean isOpenAccess;
     private String pdfPath;
 
-    public Course(Object courseId, String title, String description, double progressPercentage, boolean isOpenAccess) {
+    public Course(Object courseId, String title, String description,String pdfPath, double progressPercentage, boolean isOpenAccess) {
         // Convert ObjectId to String if necessary
         this.id = courseId instanceof ObjectId
                 ? ((ObjectId) courseId).toString()
@@ -19,6 +19,7 @@ public class Course {
         // this.id = id;
         this.title = title;
         this.description = description;
+        this.pdfPath = pdfPath;
         this.progressPercentage = progressPercentage;
         this.isOpenAccess = isOpenAccess;
     }
@@ -66,5 +67,8 @@ public class Course {
 
     public String getPdfPath() {
         return pdfPath;
+    }
+    public void setPdfPath(String pdfPath) {
+        this.pdfPath = pdfPath;
     }
 }

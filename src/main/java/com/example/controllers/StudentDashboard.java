@@ -4,7 +4,7 @@ package com.example.controllers;
 import java.util.List;
 
 import org.bson.Document;
-import org.bson.types.ObjectId;
+// import org.bson.types.ObjectId;
 
 import com.example.MainApp;
 import com.example.models.Announcement;
@@ -331,10 +331,6 @@ public class StudentDashboard {
     }
 
     private CourseCard createCourseCard(String title, String description, double progress, String  courseId) {
-        // String courseIdString = courseId instanceof ObjectId 
-        // ? ((ObjectId) courseId).toString() 
-        // : courseId.toString();
-        
         CourseCard courseCard = new CourseCard(title, description, progress, courseId);
         // Add an event handler to initialize progress when the card is clicked
         courseCard.setOnMouseClicked(event -> {

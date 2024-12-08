@@ -4,13 +4,14 @@ import com.example.models.Course;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
+// import javafx.scene.paint.Color;
+// import javafx.scene.text.Font;
 
 public class CourseDetailsView extends VBox {
 
@@ -19,6 +20,10 @@ public class CourseDetailsView extends VBox {
     private final Label accessLabel;
     private final ProgressBar progressBar;
     private final Button openPdfButton;
+    private String pdfPath;
+    public void setPdfPath(String pdfPath) {
+        this.pdfPath = pdfPath;
+    }
 
     public CourseDetailsView() {
         // Apply the custom style class
@@ -60,10 +65,19 @@ public class CourseDetailsView extends VBox {
         // Add components to the VBox
         getChildren().addAll(titleLabel, descriptionLabel, accessLabel, progressBar, actionSection);
 
+        // openPdfButton.setDisable(pdfPath == null || pdfPath.isEmpty());
         // Placeholder for PDF open action (to be implemented)
         openPdfButton.setOnAction(event -> {
-            // TODO: Implement PDF opening logic
-            System.out.println("Attempting to open course PDF");
+            if (pdfPath != null && !pdfPath.isEmpty()) {
+                PDFViewer.display(pdfPath);
+            } else {
+                // Optional: Show an alert if no PDF path is available
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("PDF Not Available");
+                alert.setHeaderText(null);
+                alert.setContentText("No PDF file is associated with this course.");
+                alert.showAndWait();
+            }
         });
     }
 
@@ -72,5 +86,8 @@ public class CourseDetailsView extends VBox {
         descriptionLabel.setText(course.getDescription());
         accessLabel.setText("Access: " + (course.isOpenAccess() ? "Open" : "Restricted"));
         progressBar.setProgress(course.getProgressPercentage() / 100);
+
+        System.out.println("_________________________Course PDF Path: " + course.getPdfPath());
+        setPdfPath(course.getPdfPath());
     }
 }

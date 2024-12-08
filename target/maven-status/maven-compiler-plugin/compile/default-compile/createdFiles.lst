@@ -11,8 +11,10 @@ com\example\controllers\AddCourseForm.class
 com\example\models\Course.class
 com\example\controllers\LogOut.class
 com\example\controllers\StudentDashboard.class
+com\example\controllers\PDFViewer.class
 com\example\views\components\CourseCard.class
 com\example\models\Teacher.class
+com\example\controllers\PdfUser.class
 com\example\services\AnnouncementService.class
 com\example\controllers\TeacherDashboard.class
 com\example\controllers\MongoDBConnector.class

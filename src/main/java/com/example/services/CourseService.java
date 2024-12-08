@@ -86,6 +86,7 @@ public class CourseService {
                         doc.getObjectId("_id").toString(), // Course ID
                         doc.getString("title"), // Title
                         doc.getString("description"), // Description
+                        doc.getString("pdfPath"),
                         // doc.getDouble("progressPercentage"), // Average progress of students
                         // (optional)
                         progressPercentage,
@@ -178,6 +179,8 @@ public class CourseService {
                                 doc.getObjectId("_id").toString(),
                                 doc.getString("title"),
                                 doc.getString("description"),
+                                doc.getString("pdfPath"),
+                                // (optional)
                                 // doc.getDouble("progressPercentage"),
                                 progressPercentage,
                                 doc.getBoolean("isOpenAccess"));
@@ -244,6 +247,7 @@ public class CourseService {
                     courseDoc.getString("title"),
                     courseDoc.getString("description"),
                     // courseDoc.getDouble("teacherEmail"),
+                    courseDoc.getString("pdfPath"),
                     courseDoc.getDouble("progressPercentage"),
                     courseDoc.getBoolean("isOpenAccess"));
         } catch (IllegalArgumentException e) {

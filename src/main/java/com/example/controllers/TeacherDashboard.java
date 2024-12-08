@@ -13,7 +13,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
+// import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -284,10 +284,10 @@ public class TeacherDashboard {
             }
             );
 
-            // Create top bar for the button    
-            HBox topBar = new HBox(createCourseBtn);
-            topBar.setStyle("-fx-background-color: #3498db; -fx-padding: 10;");
-            topBar.setAlignment(Pos.CENTER_RIGHT);
+            // // Create top bar for the button    
+            // HBox topBar = new HBox(createCourseBtn);
+            // topBar.setStyle("-fx-background-color: #3498db; -fx-padding: 10;");
+            // topBar.setAlignment(Pos.CENTER_RIGHT);
 
             coursesView.getChildren().add(createCourseBtn);
 
@@ -309,7 +309,7 @@ public class TeacherDashboard {
             scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
             scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
             
-            VBox content = new VBox(topBar,scrollPane);
+            VBox content = new VBox(scrollPane);
             content.setSpacing(10);
         
             contentArea.getChildren().clear();
@@ -321,7 +321,24 @@ public class TeacherDashboard {
     
 
     private CourseCard createCourseCard(String title, String description, double progress, String courseId) {
-        return new CourseCard(title, description, progress, courseId);
+        CourseCard  courseCard = new CourseCard(title, description, progress, courseId);
+        courseCard.setOnMouseClicked(event -> {
+            try {
+                // Initialize course progress when card is clicked --- this part isn't needed for teachers
+                // courseService.initializeCourseProgress(studentId, courseCard.getCourseId()); // courseId howa nit
+
+                Course selectedCourse = courseService.getCourseById(courseCard.getCourseId());
+                CourseDetailsView courseDetailsView = new CourseDetailsView();
+                courseDetailsView.updateCourseDetails(selectedCourse); // courseCard.getCourseId()
+
+                // Clear previous content and add the new course details view
+                contentArea.getChildren().clear();
+                contentArea.getChildren().add(courseDetailsView);
+            } catch (Exception e) {
+                showError("Course Initialization Error", e.getMessage());
+            }
+        });
+        return courseCard;
     }
     
     private void showManageStudentsView() {
