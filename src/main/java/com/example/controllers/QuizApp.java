@@ -8,8 +8,6 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.Set;
 
 
 public class QuizApp {
@@ -23,6 +21,7 @@ public class QuizApp {
 
     public void generateQuizFromPDF(String pdfPath) {
         try {
+            
             BackgroundFill backgroundFill = new BackgroundFill(Color.web("#F0F4F8"), CornerRadii.EMPTY, Insets.EMPTY);
             Background background = new Background(backgroundFill);
 
@@ -49,31 +48,16 @@ public class QuizApp {
 
             if (pdfPath != null) {
                 try {
-                    Stage pdfStage = new Stage();
+                    Stage quizStage = new Stage();  
+                    PDFViewer pdfViewer = new PDFViewer();// Use PDFViewer to display and track progress
 
-                    // Use PDFViewer to display and track progress
-                    PDFViewer.display(pdfPath, () -> {
-                        PDFViewer pdfViewer = new PDFViewer();
-    
-                        // Get the current page from the reading tracker
-                        int currentPage = pdfViewer.getReadingTracker().getCurrentPage();
-                        
-                        // Extract keywords up to the current page
-                        Map<Integer, Set<String>> keywordsMap = pdfViewer.getReadingTracker().extractKeywordsFromCompletedPages(currentPage);
-
-                        // Combine keywords into a single text block
-                        StringBuilder combinedText = new StringBuilder();
-                        for (Set<String> keywords : keywordsMap.values()) {
-                            combinedText.append(String.join(" ", keywords)).append(" ");
-                        }
-                        extractedText = combinedText.toString().trim();
-
-                        if (extractedText.isEmpty()) {
-                            showAlert(Alert.AlertType.INFORMATION, "Aucun texte extrait des pages terminées !");
+                    pdfViewer.display(pdfPath, extractedText -> {
+                        if (extractedText == null || extractedText.trim().isEmpty()) {
+                            showAlert(Alert.AlertType.INFORMATION, "Aucun texte extrait du PDF !");
                             return;
                         }
-
-                        showAlert(Alert.AlertType.INFORMATION, "Texte extrait des pages terminées avec succès !");
+                        // Main stage setup
+                        
 
                         // Set up quiz generation
                         generateQuizButton.setOnAction(event -> {
@@ -83,10 +67,6 @@ public class QuizApp {
                             titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
 
                             scrollPane.setVisible(true);
-                            if (extractedText.isEmpty()) {
-                                showAlert(Alert.AlertType.WARNING, "Aucun contenu à traiter !");
-                                return;
-                            }
 
                             try {
                                 quiz = quizHandler.generateQuiz(extractedText);
@@ -158,11 +138,11 @@ public class QuizApp {
                         vbox.setStyle("-fx-font-family: 'Arial'; -fx-font-size: 14px;");
 
                         Scene scene = new Scene(vbox);
-                        pdfStage.setMaximized(true);
-                        pdfStage.setScene(scene);
-                        pdfStage.setTitle("Quiz généré à partir du PDF");
-
-                        pdfStage.show();
+                        quizStage.setMaximized(true);
+                        quizStage.setScene(scene);
+                        quizStage.setTitle("Quiz généré à partir du PDF");
+    
+                        quizStage.show();
                     });
                 } catch (Exception e) {
                     showAlert(Alert.AlertType.ERROR, "Erreur lors de la préparation de l'application : " + e.getMessage());

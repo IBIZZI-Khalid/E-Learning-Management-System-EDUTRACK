@@ -70,7 +70,9 @@ public class CourseDetailsView extends VBox {
         openPdfButton.setOnAction(event -> {
             if (pdfPath != null && !pdfPath.isEmpty()) {
                 System.out.println("Chemin du PDF : " + pdfPath);
-                PDFViewer.display(pdfPath, () -> {
+                
+                PDFViewer pdfViewer = new PDFViewer();
+                pdfViewer.display(pdfPath, extractedText -> {
                     System.out.println("Génération automatique d'un quiz...");
                     quizApp.generateQuizFromPDF(pdfPath);
                 });
