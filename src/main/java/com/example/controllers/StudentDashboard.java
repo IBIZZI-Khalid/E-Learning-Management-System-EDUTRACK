@@ -58,7 +58,7 @@ public class StudentDashboard {
     private VBox createSidebar() {
         VBox sidebar = new VBox(10);
         sidebar.setPadding(new Insets(10));
-        sidebar.setPrefWidth(200);
+        sidebar.setPrefWidth(300);
 
         Button welcomeBtn = new Button("Home");
         Button coursesBtn = new Button("My Courses");
@@ -358,7 +358,7 @@ public class StudentDashboard {
     }
 
     private void showChatsView() {
-        // Implement logic to show student's chats
+        
     }
 
     private void applyStyling() {

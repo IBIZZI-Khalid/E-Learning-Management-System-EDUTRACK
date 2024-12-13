@@ -55,7 +55,6 @@ public class MainApp extends Application {
         primaryStage.sizeToScene(); // Automatically adjust window size to fit content
         primaryStage.show();
     }
-    
 
     public void showStudentDashboard(String studentId) {
         studentDashboard = new StudentDashboard(
@@ -66,6 +65,7 @@ public class MainApp extends Application {
         Scene scene = new Scene(studentDashboard.getView(), 1024, 768);
         primaryStage.setScene(scene);
         primaryStage.setTitle("Student Dashboard");
+        primaryStage.setMaximized(true);
         primaryStage.show();
     }
 
@@ -78,6 +78,7 @@ public class MainApp extends Application {
         Scene scene = new Scene(teacherDashboard.getView(), 1024, 768);
         primaryStage.setScene(scene);
         primaryStage.setTitle("Teacher Dashboard");
+        primaryStage.setMaximized(true);
         primaryStage.show();
 
     }

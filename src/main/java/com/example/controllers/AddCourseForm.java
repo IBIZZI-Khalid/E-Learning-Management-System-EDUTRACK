@@ -14,7 +14,7 @@ import com.mongodb.client.MongoDatabase;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+// import java.util.Date;
 
 // import javax.print.DocFlavor.STRING;
 
@@ -167,7 +167,7 @@ public class AddCourseForm extends Stage {
         try {
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
             dateFormat.setLenient(false);
-            Date parsedDate = dateFormat.parse(date);
+            // Date parsedDate = dateFormat.parse(date);
             return true;
         } catch (Exception e) {
             return false;

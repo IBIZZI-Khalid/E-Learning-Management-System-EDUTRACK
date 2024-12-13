@@ -10,8 +10,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-// import javafx.scene.paint.Color;
-// import javafx.scene.text.Font;
 
 public class CourseDetailsView extends VBox {
 
@@ -24,6 +22,8 @@ public class CourseDetailsView extends VBox {
     public void setPdfPath(String pdfPath) {
         this.pdfPath = pdfPath;
     }
+
+    private final QuizApp quizApp = new QuizApp();
 
     public CourseDetailsView() {
         // Apply the custom style class
@@ -69,9 +69,12 @@ public class CourseDetailsView extends VBox {
         // Placeholder for PDF open action (to be implemented)
         openPdfButton.setOnAction(event -> {
             if (pdfPath != null && !pdfPath.isEmpty()) {
-                PDFViewer.display(pdfPath);
+                System.out.println("Chemin du PDF : " + pdfPath);
+                PDFViewer.display(pdfPath, () -> {
+                    System.out.println("Génération automatique d'un quiz...");
+                    quizApp.generateQuizFromPDF(pdfPath);
+                });
             } else {
-                // Optional: Show an alert if no PDF path is available
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("PDF Not Available");
                 alert.setHeaderText(null);
@@ -79,6 +82,7 @@ public class CourseDetailsView extends VBox {
                 alert.showAndWait();
             }
         });
+
     }
 
     public void updateCourseDetails(Course course) {
