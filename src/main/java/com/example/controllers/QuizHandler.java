@@ -55,7 +55,7 @@ public class QuizHandler {
         }
     }
 
-    public String generateAnswers(String text) throws Exception {
+    public String generateAnswers(String extractedText, String quiz) throws Exception {
         URL url = new URL(API_URL);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
@@ -63,12 +63,15 @@ public class QuizHandler {
         connection.setDoOutput(true);
 
         String jsonInputString = "{"
-                + "\"contents\": [{"
-                + "\"parts\": [{"
-                + "\"text\": \"Fournissez uniquement les réponses au quiz basé sur le texte suivant : " + text.replace("\"", "\\\"").replace("\n", " ") + "\""
-                + "}]"
-                + "}]"
-                + "}";
+            + "\"contents\": [{"
+            + "\"parts\": [{"
+            + "\"text\": \"Je veux des réponses précises pour le quiz suivant, basé sur ce texte : \n\n"
+            + "Texte source : " + extractedText.replace("\"", "\\\"").replace("\n", " ") + "\n\n"
+            + "Quiz : " + quiz.replace("\"", "\\\"").replace("\n", " ") + "\n\n"
+            + "Fournissez uniquement les réponses correspondant exactement aux questions du quiz, dans le même ordre. Assurez-vous que chaque réponse est basée sur le texte source.\""
+            + "}]"
+            + "}]"
+            + "}";
 
         try (OutputStream os = connection.getOutputStream()) {
             os.write(jsonInputString.getBytes(StandardCharsets.UTF_8));
@@ -109,8 +112,16 @@ public class QuizHandler {
                     for (int i = 0; i < parts.length(); i++) {
                         JSONObject part = parts.optJSONObject(i);
                         if (part != null) {
-                            String answer = part.optString("text", "Réponse non disponible");
-                            formattedAnswers.append(answer).append("\n");
+                            String answerText = parts.getJSONObject(0).optString("text", "Réponses non disponibles.");
+                            String[] answerLines = answerText.split("\n");
+                            // String answer = part.optString("text", "Réponse non disponible");
+                            // formattedAnswers.append(answer).append("\n");
+                            for (String line : answerLines) {
+                                line = line.trim();
+                                if (!line.isEmpty()) {
+                                    formattedAnswers.append(line).append("\n");
+                                }
+                            }
                         }
                     }
                 }

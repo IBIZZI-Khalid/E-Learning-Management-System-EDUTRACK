@@ -3,6 +3,7 @@ package com.example.controllers;
 // import java.util.ArrayList;
 import java.util.List;
 
+import javafx.stage.Stage;
 import org.bson.Document;
 // import org.bson.types.ObjectId;
 
@@ -358,7 +359,20 @@ public class StudentDashboard {
     }
 
     private void showChatsView() {
-        
+        try {
+            // Determine the current user's role and username
+            String currentUsername = courseService.getStudentDetails(studentId).getString("name"); // You'll need to implement this method
+            String currentRole = courseService.getStudentDetails(studentId).getString("type"); // You'll need to implement this method
+
+            // Create an instance of ChatApplication with the current user's details
+            ChatApplication chatApp = new ChatApplication(currentUsername, currentRole);
+
+            // Create a new stage for the chat application
+            Stage chatStage = new Stage ();
+            chatApp.start(chatStage);
+        } catch (Exception e) {
+            System.out.println ("error");
+        }
     }
 
     private void applyStyling() {

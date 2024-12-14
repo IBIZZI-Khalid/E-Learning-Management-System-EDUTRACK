@@ -99,6 +99,9 @@ public class PDFViewer {
 
                 // Set up closing event to process reading progress
                 pdfStage.setOnCloseRequest(event -> {
+                    // Prevent default close operation
+                    event.consume();     
+                    
                     int currentPage = calculateCurrentPage();
                     Map<Integer, Set<String>> keywords = readingTracker.extractKeywordsFromCompletedPages(currentPage);
                 
@@ -123,6 +126,8 @@ public class PDFViewer {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                    // Explicitly close the stage
+                    pdfStage.close();
                     
                 
                 });

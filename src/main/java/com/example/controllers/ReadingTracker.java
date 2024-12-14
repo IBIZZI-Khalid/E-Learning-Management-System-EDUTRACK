@@ -30,11 +30,20 @@ public class ReadingTracker {
         this.pageStates = new HashMap<>();
         this.currentPage = 1;
 
-        // Initialize default stop words
-        this.stopWords = new HashSet<>(Arrays.asList(
-            "the", "a", "an", "and", "or", "but", "in", "on", "at", 
-            "to", "for", "of", "with", "by", "from", "up", "about", 
-            "into", "over", "after", "is", "are", "was", "were"
+        Set<String> stopWords = new HashSet<>(Arrays.asList(
+        // English Stop Words
+        "the", "a", "an", "and", "or", "but", "in", "on", "at", 
+        "to", "for", "of", "with", "by", "from", "up", "about", 
+        "into", "over", "after", "is", "are", "was", "were", "this", "that",
+        
+        // French Stop Words
+        "le", "la", "les", "un", "une", "des", "de", "du", "aux", 
+        "et", "ou", "mais", "car", "ni", "donc", "or", "dans", "sur", 
+        "à", "pour", "par", "avec", "sans", "sous", "contre", "entre", 
+        "pendant", "depuis", "vers", "chez", "envers", "est", "sont", 
+        "était", "étaient", "ce", "cette", "ces", "mon", "ton", "son", 
+        "notre", "votre", "leur", "qui", "que", "quoi", "dont", "où", 
+        "quand", "comment", "pourquoi"
         ));
 
         // Initialize tracking for all pages
@@ -244,6 +253,9 @@ public class ReadingTracker {
      * @return Set of top keywords
      */
     private Set<String> processPageText(String text) {
+        // Support for removing accents and normalizing text
+        text = normalizeText(text);
+
         // Remove punctuation and convert to lowercase
         text = text.replaceAll("[^a-zA-Z\\s]", "").toLowerCase();
         
@@ -265,5 +277,17 @@ public class ReadingTracker {
             .limit(topKeywordCount)
             .map(Map.Entry::getKey)
             .collect(Collectors.toSet());
+    }
+
+    private String normalizeText(String text) {
+        // Method to remove accents and normalize text
+        // we might want to use a library like Apache Commons Lang for more robust normalization
+        return text.replaceAll("[àáâãäå]", "a")
+                   .replaceAll("[èéêë]", "e")
+                   .replaceAll("[ìíîï]", "i")
+                   .replaceAll("[òóôõö]", "o")
+                   .replaceAll("[ùúûü]", "u")
+                   .replaceAll("[ýÿ]", "y")
+                   .replaceAll("[ñ]", "n");
     }
 }

@@ -5,6 +5,7 @@ com\example\controllers\AddCourseForm.class
 com\example\views\components\CourseCard.class
 com\example\models\Teacher.class
 com\example\controllers\PdfHandler.class
+com\example\controllers\QuizApp$1.class
 com\example\controllers\TeacherDashboard.class
 com\example\controllers\MongoDBConnector.class
 com\example\YouTubeScraper.class

@@ -9,18 +9,23 @@ import com.mongodb.client.result.UpdateResult;
 import org.bson.Document;
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.time.LocalDateTime;
+
 public class MongoDBConnector {
     private static MongoClient mongoClient;
     private static MongoDatabase database;
     // private static Student student;
     // private static Teacher teacher;
+    public static MongoCollection<Document> groupMessagesCollection;
+    public static MongoCollection<Document> privateMessagesCollection;
     private static MongoCollection<Document> studentsCollection;
     private static MongoCollection<Document> teachersCollection;
     private static MongoCollection<Document> coursCollection;
 
     // Flexible connection method supporting multiple collections
-    public static MongoDatabase connect(String connectionString) {
+    public static MongoDatabase connect(String s) {
         try {
+            String connectionString = "mongodb://localhost:27017/EduTrack";
             mongoClient = MongoClients.create(connectionString);
             database = mongoClient.getDatabase("EduTrack");
 
@@ -28,6 +33,8 @@ public class MongoDBConnector {
             studentsCollection = database.getCollection("students");
             teachersCollection = database.getCollection("teachers");
             coursCollection = database.getCollection("courses");
+            groupMessagesCollection = database.getCollection("group_messages");
+            privateMessagesCollection = database.getCollection("private_messages");
 
             System.out.println("Connected to MongoDB successfully!");
             return database;
@@ -52,7 +59,45 @@ public class MongoDBConnector {
     public  MongoCollection<Document> getCoursCollection() {
         return coursCollection;
     }
+    public static void savePrivateMessage(String sender, String recipient, String message) {
+        if (privateMessagesCollection == null) {
+            System.out.println("MongoDB private messages collection not initialized");
+            return;
+        }
 
+        // Création du document pour le message privé
+        Document messageDocument = new Document("sender", sender)
+                .append("recipient", recipient)
+                .append("message", message)
+                .append("timestamp", LocalDateTime.now().toString());
+
+        // Tentative d'insertion du message
+        try {
+            privateMessagesCollection.insertOne(messageDocument);
+            System.out.println("Private message saved successfully!");
+        } catch (Exception e) {
+            System.out.println("Error saving private message: " + e.getMessage());
+        }
+    }
+    public static void saveGroupMessage(String sender, String message) {
+        if (groupMessagesCollection == null) {
+            System.out.println("MongoDB group messages collection not initialized");
+            return;
+        }
+
+        // Création du document pour le message
+        Document messageDocument = new Document("sender", sender)
+                .append("message", message)
+                .append("timestamp", LocalDateTime.now().toString());
+
+        // Tentative d'insertion du message
+        try {
+            groupMessagesCollection.insertOne(messageDocument);
+            System.out.println("Group message saved successfully!");
+        } catch (Exception e) {
+            System.out.println("Error saving group message: " + e.getMessage());
+        }
+    }
     // User registration method with role-based collection insertion
     public static void registerUser(User user, String role) {
         String salt = BCrypt.gensalt(12);

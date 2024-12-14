@@ -1,14 +1,15 @@
 package com.example.controllers;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.concurrent.Task;
 
 import java.util.ArrayList;
-
 
 public class QuizApp {
 
@@ -20,137 +21,177 @@ public class QuizApp {
     private String extractedText;
 
     public void generateQuizFromPDF(String pdfPath) {
-        try {
-            
-            BackgroundFill backgroundFill = new BackgroundFill(Color.web("#F0F4F8"), CornerRadii.EMPTY, Insets.EMPTY);
-            Background background = new Background(backgroundFill);
+            try {
+                Stage quizStage = new Stage();
+                quizStage.setTitle("Quiz généré à partir du PDF");
 
-            VBox questionsBox = new VBox(10);
-            ScrollPane scrollPane = new ScrollPane();
-            scrollPane.setFitToWidth(true);
-            scrollPane.setPrefHeight(450);
-            scrollPane.setVisible(false);
-            scrollPane.setContent(questionsBox);
+                // Load the CSS
+                String cssPath = getClass().getResource("/CSS/quizapp.css").toExternalForm();
 
-            Button generateQuizButton = new Button("Générer Quiz");
-            Button showAnswersButton = new Button("Afficher Réponses");
-            Button downloadPdfButton = new Button("Télécharger en PDF");
+                PDFViewer pdfViewer = new PDFViewer();
+                pdfViewer.display(pdfPath, extractedText -> {
+                    if (extractedText == null || extractedText.trim().isEmpty()) {
+                        showAlert(Alert.AlertType.INFORMATION, "Aucun texte extrait du PDF !");
+                        return;
+                    }
 
-            TextArea answersArea = new TextArea();
-            answersArea.setVisible(false);
+                    this.extractedText = extractedText;
 
-            // Styles
-            generateQuizButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-padding: 10px 20px; -fx-font-size: 14px; -fx-border-radius: 5px;");
-            showAnswersButton.setStyle("-fx-background-color: #FF9800; -fx-text-fill: white; -fx-padding: 10px 20px; -fx-font-size: 14px; -fx-border-radius: 5px;");
-            downloadPdfButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 10px 20px; -fx-font-size: 14px; -fx-border-radius: 5px;");
-            showAnswersButton.setVisible(false);
-            downloadPdfButton.setVisible(false);
+                    // Create a centered main container
+                    VBox mainContainer = new VBox(15);
+                    mainContainer.setAlignment(Pos.CENTER);
+                    mainContainer.getStyleClass().add("quiz-container");
+                    mainContainer.setPadding(new Insets(20));
 
-            if (pdfPath != null) {
-                try {
-                    Stage quizStage = new Stage();  
-                    PDFViewer pdfViewer = new PDFViewer();// Use PDFViewer to display and track progress
+                    Label titleLabel = new Label("Quiz à passer, Bon courage !!!");
+                    titleLabel.getStyleClass().add("quiz-title");
+                    titleLabel.setAlignment(Pos.CENTER);
 
-                    pdfViewer.display(pdfPath, extractedText -> {
-                        if (extractedText == null || extractedText.trim().isEmpty()) {
-                            showAlert(Alert.AlertType.INFORMATION, "Aucun texte extrait du PDF !");
-                            return;
-                        }
-                        // Main stage setup
-                        
+                    // Improved loading indicator
+                    ProgressIndicator loadingIndicator = new ProgressIndicator();
+                    loadingIndicator.getStyleClass().add("loading-indicator");
+                    loadingIndicator.setVisible(false);
+                    // Make loading indicator larger and more prominent
+                    loadingIndicator.setPrefSize(100, 100);
 
-                        // Set up quiz generation
-                        generateQuizButton.setOnAction(event -> {
-                            generateQuizButton.setVisible(false);
+                    Button generateQuizButton = new Button("Générer Quiz");
+                    generateQuizButton.getStyleClass().add("generate-quiz-button");
 
-                            Label titleLabel = new Label("Quiz à passer, Bon courage !!!");
-                            titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+                    Button showAnswersButton = new Button("Afficher Réponses");
+                    showAnswersButton.getStyleClass().add("show-answers-button");
+                    showAnswersButton.setVisible(false);
 
-                            scrollPane.setVisible(true);
+                    Button downloadPdfButton = new Button("Télécharger en PDF");
+                    downloadPdfButton.getStyleClass().add("download-pdf-button");
+                    downloadPdfButton.setVisible(false);
 
-                            try {
+                    ScrollPane scrollPane = new ScrollPane();
+                    scrollPane.setFitToWidth(true);
+                    scrollPane.setPrefHeight(450);
+                    scrollPane.setVisible(false);
+
+                    VBox questionsBox = new VBox(10);
+                    questionsBox.setAlignment(Pos.CENTER);
+                    scrollPane.setContent(questionsBox);
+
+                    TextArea answersArea = new TextArea();
+                    answersArea.setVisible(false);
+                    answersArea.setEditable(false);
+
+                    // Centered button container
+                    HBox buttonContainer = new HBox(15);
+                    buttonContainer.setAlignment(Pos.CENTER);
+                    buttonContainer.getChildren().addAll(generateQuizButton, showAnswersButton, downloadPdfButton);
+
+                    generateQuizButton.setOnAction(event -> {
+                        generateQuizButton.setVisible(false);
+                        loadingIndicator.setVisible(true);
+
+                        Task<Void> quizGenerationTask = new Task<>() {
+                            @Override
+                            protected Void call() throws Exception {
                                 quiz = quizHandler.generateQuiz(extractedText);
-                                String[] questions = quiz.split("\n\n");
-
-                                questionsWithChoices.clear();
-                                for (String question : questions) {
-                                    String[] parts = question.split("\n");
-
-                                    if (parts.length > 1) {
-                                        String[] questionAndChoices = new String[parts.length];
-                                        questionAndChoices[0] = parts[0];
-                                        System.arraycopy(parts, 1, questionAndChoices, 1, parts.length - 1);
-                                        questionsWithChoices.add(questionAndChoices);
-                                    }
-                                }
-
-                                answersArea.setVisible(false);
-                                displayAllQuestions(questionsBox);
-                                showAnswersButton.setVisible(true);
-
-                            } catch (Exception e) {
-                                showAlert(Alert.AlertType.ERROR, "Erreur lors de la génération du quiz : " + e.getMessage());
-                            }
-                        });
-
-                        showAnswersButton.setOnAction(event -> {
-                            if (quiz == null || quiz.isEmpty()) {
-                                showAlert(Alert.AlertType.WARNING, "Aucun quiz généré à traiter pour générer des réponses !");
-                                return;
+                                return null;
                             }
 
-                            try {
-                                StringBuilder filteredAnswers = new StringBuilder();
-                                String[] questions = quiz.split("\n\n");
-
-                                for (String question : questions) {
-                                    String[] questionParts = question.split("\n");
-
-                                    if (questionParts.length > 1 && questionParts[0] != null && !questionParts[0].isEmpty()) {
-                                        String answer = quizHandler.generateAnswers(question);
-                                        filteredAnswers.append(questionParts[0]).append("\n").append(answer).append("\n\n");
-                                    } else {
-                                        System.out.println("Question vide ou mal formatée détectée, réponse ignorée.");
-                                    }
-                                }
-
-                                if (filteredAnswers.length() > 0) {
-                                    answersArea.setVisible(true);
-                                    answersArea.setText(filteredAnswers.toString());
-                                } else {
-                                    showAlert(Alert.AlertType.WARNING, "Aucune réponse valide à afficher !");
-                                }
-
-                                generateQuizButton.setVisible(false);
-                                downloadPdfButton.setVisible(true);
-
-                            } catch (Exception e) {
-                                showAlert(Alert.AlertType.ERROR, "Erreur lors de la génération des réponses : " + e.getMessage());
+                            @Override
+                            protected void succeeded() {
+                                Platform.runLater(() -> {
+                                    loadingIndicator.setVisible(false);
+                                    processQuizGeneration(quiz, questionsBox, showAnswersButton, scrollPane);
+                                });
                             }
-                        });
 
-                        Label titleLabel = new Label("Quiz à passer, Bon courage !!!");
-                        titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+                            @Override
+                            protected void failed() {
+                                Platform.runLater(() -> {
+                                    loadingIndicator.setVisible(false);
+                                    showAlert(Alert.AlertType.ERROR, "Erreur lors de la génération du quiz : " + getException().getMessage());
+                                    generateQuizButton.setVisible(true);
+                                });
+                            }
+                        };
 
-                        VBox vbox = new VBox(15, titleLabel, generateQuizButton, scrollPane, showAnswersButton, answersArea, downloadPdfButton);
-                        vbox.setPadding(new Insets(100));
-                        vbox.setBackground(background);
-                        vbox.setStyle("-fx-font-family: 'Arial'; -fx-font-size: 14px;");
-
-                        Scene scene = new Scene(vbox);
-                        quizStage.setMaximized(true);
-                        quizStage.setScene(scene);
-                        quizStage.setTitle("Quiz généré à partir du PDF");
-    
-                        quizStage.show();
+                        new Thread(quizGenerationTask).start();
                     });
-                } catch (Exception e) {
-                    showAlert(Alert.AlertType.ERROR, "Erreur lors de la préparation de l'application : " + e.getMessage());
-                }
+                    
+                    showAnswersButton.setOnAction(event -> {
+                        // Disable the button and show loading indicator
+                        showAnswersButton.setVisible(false);
+                        loadingIndicator.setVisible(true);
+                    
+                        // Create a task to generate answers
+                        Task<Void> answersGenerationTask = new Task<>() {
+                            @Override
+                            protected Void call() throws Exception {
+                                // Generate answers using the same extracted text used for quiz generation
+                                String answers = quizHandler.generateAnswers(extractedText,quiz);
+                                
+                                // Update UI on JavaFX Application Thread
+                                Platform.runLater(() -> {
+                                    answersArea.setText(answers);
+                                    answersArea.setVisible(true);
+                                    loadingIndicator.setVisible(false);
+                                });
+                                return null;
+                            }
+                    
+                            @Override
+                            protected void failed() {
+                                Platform.runLater(() -> {
+                                    loadingIndicator.setVisible(false);
+                                    showAlert(Alert.AlertType.ERROR, "Erreur lors de la génération des réponses : " + getException().getMessage());
+                                    showAnswersButton.setVisible(true);
+                                });
+                            }
+                        };
+                    
+                        // Run the task in a new thread
+                        new Thread(answersGenerationTask).start();
+                    });
+
+
+                    // Add components to the main container with center alignment
+                    mainContainer.getChildren().addAll(
+                        titleLabel, 
+                        loadingIndicator, 
+                        buttonContainer,
+                        scrollPane, 
+                        answersArea
+                    );
+
+                    Scene scene = new Scene(mainContainer, 600, 800);
+                    scene.getStylesheets().add(cssPath);
+                    
+                    quizStage.setScene(scene);
+                    quizStage.setMaximized(true);
+                    quizStage.show();
+                });
+            } catch (Exception e) {
+                showAlert(Alert.AlertType.ERROR, "Erreur lors de la préparation de l'application : " + e.getMessage());
             }
-        } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur lors de la préparation de l'application : " + e.getMessage());
         }
+
+    
+        
+    private void processQuizGeneration(String quiz, VBox questionsBox, Button showAnswersButton, ScrollPane scrollPane) {
+        String[] questions = quiz.split("\n\n");
+
+        questionsWithChoices.clear();
+        for (String question : questions) {
+            String[] parts = question.split("\n");
+
+            if (parts.length > 1) {
+                String[] questionAndChoices = new String[parts.length];
+                questionAndChoices[0] = parts[0];
+                System.arraycopy(parts, 1, questionAndChoices, 1, parts.length - 1);
+                questionsWithChoices.add(questionAndChoices);
+            }
+        }
+
+        displayAllQuestions(questionsBox);
+        scrollPane.setVisible(true);
+        showAnswersButton.setVisible(true);
     }
 
     private void displayAllQuestions(VBox questionsBox) {
@@ -163,20 +204,21 @@ public class QuizApp {
             }
 
             Label questionLabel = new Label(questionWithChoices[0]);
-            questionLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #2C3E50;");
+            questionLabel.getStyleClass().add("quiz-question-label");
 
             VBox questionVBox = new VBox(5);
-            questionVBox.setPadding(new Insets(10));
-
             questionVBox.getChildren().add(questionLabel);
 
             VBox choicesBox = new VBox(5);
             choicesBox.setPadding(new Insets(10, 0, 10, 20));
 
+            ToggleGroup toggleGroup = new ToggleGroup();
+
             for (int i = 1; i < questionWithChoices.length; i++) {
                 if (questionWithChoices[i] != null && !questionWithChoices[i].isEmpty()) {
                     RadioButton choiceButton = new RadioButton(questionWithChoices[i]);
-                    choiceButton.setStyle("-fx-font-size: 14px;");
+                    choiceButton.getStyleClass().add("quiz-choice-radio");
+                    choiceButton.setToggleGroup(toggleGroup);
                     choicesBox.getChildren().add(choiceButton);
                 }
             }
