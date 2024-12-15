@@ -10,45 +10,75 @@ import org.openqa.selenium.chrome.ChromeOptions;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.Duration;
+import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 public class YouTubeScraper {
+
+    public static File loadChromeDriver() throws Exception {
+        // Load the chromedriver.exe file from the resources folder
+        try (InputStream inputStream = YouTubeScraper.class.getClassLoader().getResourceAsStream("chromedriver.exe")) {
+            if (inputStream == null) {
+                throw new RuntimeException("Chromedriver not found in resources");
+            }
+
+            // Create a temporary file to store the chromedriver
+            Path tempFile = Files.createTempFile("chromedriver", ".exe");
+            tempFile.toFile().deleteOnExit(); // Delete the temp file when the JVM exits
+
+            // Copy the content from the input stream (chromedriver from resources) to the
+            // temporary file
+            Files.copy(inputStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
+
+            return tempFile.toFile();
+        }
+    }
+
     public static void main(String[] args) {
 
-        // Configure ChromeOptions to specify arguments
-        ChromeOptions options = new ChromeOptions();
-
-        // hna kan spicifyiw fin kayn software dyal chrome (only if its not our default
-        // browser)
-        options.setBinary("C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe");
-
-        // options.addArguments("--headless"); // Run in headless mode
-        options.addArguments("--disable-gpu");
-        options.addArguments("--no-sandbox");
-        options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--remote-allow-origins=*");
-
-        // Specifying the path to ChromeDriver exe
-        System.setProperty("webdriver.chrome.driver",
-                "C:\\Program Files\\chromedriver-win64\\chromedriver.exe");
-        WebDriver driver = new ChromeDriver(options);
-        // YouTubeScraper scraper = new YouTubeScraper();
-        // hna ghir ghantestiw bhad search term :
-        List<String> videoLinks = scrapeYouTubeLinks(driver, "java programming");
-
-        // Print the scraped video links
-        for (String link : videoLinks) {
-            System.out.println(link);
-        }
         try {
-            writetofile(videoLinks);
+            // Configure ChromeOptions to specify   arguments
+            ChromeOptions options = new ChromeOptions();
+
+            // hna kan spicifyiw fin kayn software dyal chrome (only if its not our default
+            // browser)
+            options.setBinary("C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe");
+
+            // options.addArguments("--headless"); // Run in headless mode
+            options.addArguments("--disable-gpu");
+            options.addArguments("--no-sandbox");
+            options.addArguments("--disable-dev-shm-usage");
+            options.addArguments("--remote-allow-origins=*");
+
+            File chromeDriver = loadChromeDriver();
+
+            // Set the system property for the WebDriver
+            System.setProperty("webdriver.chrome.driver", chromeDriver.getAbsolutePath());
+
+            WebDriver driver = new ChromeDriver(options);
+            // YouTubeScraper scraper = new YouTubeScraper();
+            // hna ghir ghantestiw bhad search term :
+            List<String> videoLinks = scrapeYouTubeLinks(driver, "java programming");
+
+            // Print the scraped video links
+            for (String link : videoLinks) {
+                System.out.println(link);
+            }
+            try {
+                writetofile(videoLinks);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            // driver.quit();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        // driver.quit();
     }
 
     // creating a txt file to save the video links in

@@ -22,7 +22,14 @@ public class MongoDBConnector {
     // Flexible connection method supporting multiple collections
     public static MongoDatabase connect(String s) {
         try {
-            String connectionString = "mongodb://localhost:27017/EduTrack";
+            // Get MongoDB connection string from environment variable
+            String connectionString = System.getenv("MONGO_URL");
+
+            if (connectionString == null || connectionString.isEmpty()) {
+                // Fallback to localhost if the environment variable is not set
+                connectionString = "mongodb://localhost:27017/EduTrack";
+            }
+
             mongoClient = MongoClients.create(connectionString);
             database = mongoClient.getDatabase("EduTrack");
 

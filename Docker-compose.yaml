@@ -1,26 +1,33 @@
 version: '3.8'
 
 services:
-  mongodb:
+  mongo_database:
     image: mongo:latest
-    container_name: edutrack-mongodb
     volumes: 
-      - C:\mongodb\data\db:/data/db
+      #- C:\mongodb\data\db\empty:/data/db
+      - ./mongo_db_init/init_db.js:/docker-entrypoint-initdb.d/init-mongo.js 
     ports:
       - "27017:27017"
     environment:
-      - MONGO_INITDB_DATABASE=edutrack
+      - MONGO_INITDB_DATABASE=EduTrack
+    networks:
+      - my-network
 
   java-app:
     build: 
       context: .
       dockerfile: Dockerfile
-    container_name: edutrack-app
+      
+    container_name: edutrack-javafx-app
     depends_on:
-      - mongodb
+      - mongo_database
     ports:
-      - "8080:8080"
+      - "5900:5900"
     environment:
-      - MONGO_HOST=mongodb
-      - MONGO_PORT=27017
-      - MONGO_DATABASE=edutrack
+      - MONGO_URL=mongodb://mongo_database/EduTrack
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    driver: bridge
