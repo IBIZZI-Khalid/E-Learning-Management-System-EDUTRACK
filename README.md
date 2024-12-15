@@ -1,31 +1,72 @@
-started as a simple project to scrap video links based on a search term, with pure java
-now its EduTrack ! a Java-based E-Learning Management System designed to facilitate online education for both students and teachers. 
-The system enables the management and delivery of digital learning content while tracking student progress in an interactive and user-friendly environment. Key features include:
 
-User Management: Separate dashboards for teachers and students, with secure login and signup functionality.
-Course Management: Teachers can create courses, specify their accessibility (open to all or invite-based), and manage enrolled students.
-Content Tracking: Integration with PDFs allows tracking of student progress through course materials.
-Announcements: Teachers can post announcements visible to all students in their courses.
+Overview
+This is a Java-based E-Learning Management System designed for online education, facilitating course management, announcements, and progress tracking for both teachers and students.
 
-Dashboard Features:
-For Students: View enrolled and open-access courses, progress tracking, and announcements.
-For Teachers: View course statistics, student performance, and manage course enrollments.
-Database Integration: Backed by MongoDB for storing user data, course content, progress metrics, and announcements.
-
-The system is built using JavaFX for the frontend and leverages MongoDB for data persistence, providing a scalable, intuitive platform for modern education needs.
+_____________________________________________________________________________________
 
 
+1. Running Locally
+    Starting the Database
+        To start the MongoDB database locally, run the following command in your terminal:
+        C:\mongodb\bin>mongod --dbpath C:\mongodb\data\db
 
-to start the app :
+    Running the Application with JavaFX
+        To run the application using JavaFX, navigate to the project directory and run:
+        C:\Users\hp\Desktop\EduTrack\EduTrack> mvn javafx:run
 
-C:\mongodb\bin>mongod --dbpath C:\mongodb\data\db
-
-and keep it running thats the server its self now 
-
-for running the jfx : 
-C:\Users\hp\YouTubeScraper> mvn javafx:run
+This command ensures the application runs smoothly, especially since it was developed on a Windows operating system. Using this approach will minimize unexpected errors.
 
 
-student@uiz.ac.ma
+_____________________________________________________________________________________
 
-next goal , avg progress 3nd teacher
+
+2. Running the App in Docker
+    If you'd prefer to run the app in a Docker container, follow these steps:
+        In the project directory, run:
+            docker-compose up --build
+
+This will:
+
+Install all the necessary dependencies.
+Create the required database and collections, initializing them with data from the mongo_db_init\init_db.js script.
+Insert an example user-teacher, user-student, and a course document with associated paths.
+
+
+_____________________________________________________________________________________
+
+3. Login Information
+    Once the app is running, you can log in using the following credentials:
+        Student login:
+            Email: student@uiz.ac.ma
+            Password: studentstudent
+        Teacher login:
+            Email: teacher@uiz.ac.ma
+            Password: teacherteacher
+
+the teacher's main features are
+when trynna upload a pdf as a teacher I suggest to use this one in : pdf_examples\IntroductionJavaFX-V1 (1).pdf
+
+_____________________________________________________________________________________
+
+Known Issues
+
+
+1. Progress Tracking and Quiz Suggestion
+    The app is designed to track the user's progress as they read a PDF. After reading, when the user closes the app, it is supposed to:
+        -Display a page suggesting a quiz based on the keywords extracted from the content they’ve read.
+        -Use the Gemini API to generate the quiz based on these keywords.
+
+    However, this feature works fine in local Windows tests (you can see test screenshots in src\test\java\com\example\tests_on_windows_local), but it is encountering an issue when running inside Docker. The error is not yet identified, but it is related to Docker's environment.
+.
+.
+.
+
+2. YouTube Video Suggestions (Incomplete)
+    Due to time constraints, the YouTube scraper feature is not fully integrated yet. The idea is to use the keywords extracted from the content the user has finished reading and then suggest relevant YouTube videos through the YouTube Scraper.
+
+    Currently, the scraper is standalone, and you can test it independently by following these steps:
+        1. Copy the file src\main\java\com\example\YouTubeScraper.java to your local PC that has chrome.exe installed.
+        2. Update the path to chrome.exe on line 53 of the YouTubeScraper.java file.
+        3. Run the class to generate a file.txt containing the video links scraped by Selenium WebDriver.
+
+    Once the progress tracking issue is resolved, we plan to integrate the YouTube video suggestion feature into the app.

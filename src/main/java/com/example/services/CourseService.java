@@ -297,7 +297,8 @@ public class CourseService {
 
             // Check if enrolledCourses is a list
             if (!(enrolledCoursesObj instanceof List)) {
-                throw new RuntimeException("Invalid enrolled courses format");
+                System.out.println("Invalid enrolled courses format");
+                return 0.0;
             }
 
             // Cast to List and check if the student is enrolled in the course

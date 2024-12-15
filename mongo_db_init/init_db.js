@@ -10,7 +10,6 @@ db.createCollection('courses');
 db.createCollection('group_messages');
 db.createCollection('private_messages');
 
-// Insert the student document into the 'students' collection (without enrolledCourses)
 db.students.insertOne({
     "_id": ObjectId("67559a491c487a67c681606e"),
     "name": "student",
@@ -28,7 +27,6 @@ db.students.insertOne({
     }
 });
 
-// Insert the teacher document into the 'teachers' collection
 db.teachers.insertOne({
     "_id": ObjectId("6755999d1c487a67c681606d"),
     "name": "teacher",
@@ -38,4 +36,20 @@ db.teachers.insertOne({
     "type": "Teacher",
     "password": "$2a$12$xRACfsbToY1xNi6hj1YvguNqpZT.TcQOqUKDPMiyHvP0RCuxpOI.i"
 });
+
+
+db.courses.insertOne({
+    "_id": {
+      "$oid": "675f485f4419350a39710ae3"
+    },
+    "title": "aze",
+    "description": "aze",
+    "teacherEmail": "teacher@uiz.ac.ma",
+    "progressPercentage": 0,
+    "pdfPath": "/app/pdf_examples/IntroductionJavaFX-V1 (1).pdf",
+    "isOpenAccess": true
+  }
+)
+
+
 

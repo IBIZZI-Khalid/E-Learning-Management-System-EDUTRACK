@@ -23,6 +23,7 @@ RUN wget https://download2.gluonhq.com/openjfx/23.0.1/openjfx-23.0.1_linux-x64_b
 # Copier le fichier pom.xml et le répertoire source dans l'image Docker
 COPY pom.xml /app
 COPY src /app/src
+COPY pdf_examples pdf_examples
 
 # Installer les dépendances Maven et construire le projet Java
 RUN mvn clean package

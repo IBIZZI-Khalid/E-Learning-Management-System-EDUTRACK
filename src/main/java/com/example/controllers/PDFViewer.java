@@ -113,7 +113,7 @@ public class PDFViewer {
                 pdfStage.show();
 
                 // Set up closing event to process reading progress
-                setupCloseEvent(allPageText, onProcessComplete);
+                // setupCloseEvent(allPageText, onProcessComplete);
                 pdfStage.setOnCloseRequest(event -> {
                     try {
                         int currentPage = calculateCurrentPage();

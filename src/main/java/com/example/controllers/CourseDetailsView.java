@@ -38,8 +38,8 @@ public class CourseDetailsView extends VBox {
 
         // Apply the custom style class
         getStyleClass().add("course-details-container");
-        // Load the CSS file
-        String cssPath = getClass().getResource("/CSS/coursedetails.css").toExternalForm();
+        // Load the css file
+        String cssPath = getClass().getResource("/css/coursedetails.css").toExternalForm();
         getStylesheets().add(cssPath);
 
         setPadding(new Insets(20));

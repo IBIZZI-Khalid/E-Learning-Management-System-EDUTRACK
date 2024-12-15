@@ -68,21 +68,21 @@ public class StudentDashboard {
 
         Button welcomeBtn = new Button("Home");
         Button coursesBtn = new Button("My Courses");
-        Button progressBtn = new Button("My Progress");
+        // Button progressBtn = new Button("My Progress");
         Button chatsBtn = new Button("Chats");
         Button announcementsBtn = new Button("Announcements");
         Button logoutBtn = new Button("Logout");
 
         welcomeBtn.setMaxWidth(Double.MAX_VALUE);
         coursesBtn.setMaxWidth(Double.MAX_VALUE);
-        progressBtn.setMaxWidth(Double.MAX_VALUE);
+        // progressBtn.setMaxWidth(Double.MAX_VALUE);
         chatsBtn.setMaxWidth(Double.MAX_VALUE);
         announcementsBtn.setMaxWidth(Double.MAX_VALUE);
         logoutBtn.setMaxWidth(Double.MAX_VALUE);
 
         welcomeBtn.setOnAction(e -> showWelcomeView()); // Add action
         coursesBtn.setOnAction(e -> showCoursesView());
-        progressBtn.setOnAction(e -> showProgressView());
+        // progressBtn.setOnAction(e -> showProgressView());
         chatsBtn.setOnAction(e -> showChatsView());
         announcementsBtn.setOnAction(e -> showAnnouncementsView()); // Add action
         logoutBtn.setOnAction(e -> new LogOut(mainApp).execute());
@@ -92,7 +92,7 @@ public class StudentDashboard {
                 new Separator(),
                 welcomeBtn,
                 coursesBtn,
-                progressBtn,
+                // progressBtn,
                 chatsBtn,
                 announcementsBtn,
                 logoutBtn);
@@ -395,7 +395,7 @@ public class StudentDashboard {
         view.getStyleClass().add("dashboard");
         sidebar.getStyleClass().add("sidebar");
 
-        // Add CSS
+        // Add css
         view.getStylesheets().add(getClass().getResource("/css/dashboard.css").toExternalForm());
     }
 

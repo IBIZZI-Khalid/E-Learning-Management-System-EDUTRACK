@@ -529,7 +529,7 @@ public class TeacherDashboard {
         view.getStyleClass().add("dashboard");
         sidebar.getStyleClass().add("sidebar");
 
-        // Add CSS
+        // Add css
         view.getStylesheets().add(getClass().getResource("/css/dashboard.css").toExternalForm());
     }
 
