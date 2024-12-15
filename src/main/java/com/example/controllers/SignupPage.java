@@ -38,13 +38,12 @@ public class SignupPage {
         view.setPrefHeight(Region.USE_COMPUTED_SIZE);
         view.setMaxHeight(800);
 
-         // Add padding for better spacing
+        // Add padding for better spacing
         view.setPadding(new Insets(20));
 
         // Create a card to hold authentication elements
         VBox authCard = new VBox(15);
         authCard.getStyleClass().add("auth-card");
-        
 
         // Title
         Label titleLabel = new Label("Create Account");
@@ -90,8 +89,6 @@ public class SignupPage {
         roleComboBox.setPromptText("Select Role");
         roleComboBox.getStyleClass().add("auth-combo-box");
 
-        
-
         // Signup Button
         Button signupButton = new Button("Sign Up");
         signupButton.getStyleClass().add("auth-button");
@@ -129,18 +126,18 @@ public class SignupPage {
 
         // Create ScrollPane to enable scrolling and adaptive sizing
         mainScrollPane = new ScrollPane(view);
-        mainScrollPane.setFitToWidth(true);   // Adjust width automatically
-        mainScrollPane.setFitToHeight(true);  // Allow vertical scrolling if needed
-        
+        mainScrollPane.setFitToWidth(true); // Adjust width automatically
+        mainScrollPane.setFitToHeight(true); // Allow vertical scrolling if needed
+
         // Set minimum and maximum constraints
-        mainScrollPane.setMinWidth(350);      // Minimum reasonable width
-        mainScrollPane.setMaxWidth(600);      // Maximum reasonable width
-        mainScrollPane.setPrefWidth(450);     // Preferred default width
-        
+        mainScrollPane.setMinWidth(350); // Minimum reasonable width
+        mainScrollPane.setMaxWidth(600); // Maximum reasonable width
+        mainScrollPane.setPrefWidth(450); // Preferred default width
+
         // Vertical sizing
-        mainScrollPane.setMinHeight(500);     // Minimum height
-        mainScrollPane.setMaxHeight(800);     // Maximum height
-        
+        mainScrollPane.setMinHeight(500); // Minimum height
+        mainScrollPane.setMaxHeight(800); // Maximum height
+
         // Ensure smooth scrolling and no horizontal scrollbar
         mainScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         mainScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
@@ -199,7 +196,7 @@ public class SignupPage {
 
                 // Navigate to appropriate dashboard
                 if ("Student".equals(role)) {
-                    // we gotta find the email value so  that the welcome page is showen correctly
+                    // we gotta find the email value so that the welcome page is showen correctly
                     User foundUser = MongoDBConnector.findUserByEmail(email, role);
                     mainApp.showStudentDashboard(foundUser.getId());
                 } else {

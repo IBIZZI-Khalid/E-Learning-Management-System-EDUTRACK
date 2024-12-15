@@ -27,3 +27,5 @@ C:\Users\hp\YouTubeScraper> mvn javafx:run
 
 
 student@uiz.ac.ma
+
+next goal , avg progress 3nd teacher

@@ -11,6 +11,8 @@ import javafx.concurrent.Task;
 
 import java.util.ArrayList;
 
+import com.mongodb.client.MongoDatabase;
+
 public class QuizApp {
 
     private final PdfHandler pdfHandler = new PdfHandler();
@@ -20,7 +22,7 @@ public class QuizApp {
     private String quiz;
     private String extractedText;
 
-    public void generateQuizFromPDF(String pdfPath) {
+    public void generateQuizFromPDF(String pdfPath , String studentId, String courseId, MongoDatabase database) {
             try {
                 Stage quizStage = new Stage();
                 quizStage.setTitle("Quiz généré à partir du PDF");
@@ -29,7 +31,12 @@ public class QuizApp {
                 String cssPath = getClass().getResource("/CSS/quizapp.css").toExternalForm();
 
                 PDFViewer pdfViewer = new PDFViewer();
-                pdfViewer.display(pdfPath, extractedText -> {
+                pdfViewer.display(
+                    pdfPath, 
+                    studentId,  // Provide the student ID
+                    courseId,   // Provide the course ID if available
+                    database,   // Provide the MongoDB database
+                    extractedText  -> {
                     if (extractedText == null || extractedText.trim().isEmpty()) {
                         showAlert(Alert.AlertType.INFORMATION, "Aucun texte extrait du PDF !");
                         return;

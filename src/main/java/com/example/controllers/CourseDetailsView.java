@@ -1,6 +1,8 @@
 package com.example.controllers;
 
 import com.example.models.Course;
+import com.example.services.CourseService;
+import com.mongodb.client.MongoDatabase;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -19,19 +21,27 @@ public class CourseDetailsView extends VBox {
     private final ProgressBar progressBar;
     private final Button openPdfButton;
     private String pdfPath;
-    public void setPdfPath(String pdfPath) {
-        this.pdfPath = pdfPath;
-    }
+    private String studentId;
+    private String courseId;
+    private MongoDatabase database;
 
     private final QuizApp quizApp = new QuizApp();
+    private CourseService courseService;
 
-    public CourseDetailsView() {
+    public CourseDetailsView(MongoDatabase database, String studentId) {
+
+        this.database = database;
+        this.studentId = studentId;
+        this.courseService = new CourseService(database);
+
+        // setupUI();
+
         // Apply the custom style class
         getStyleClass().add("course-details-container");
         // Load the CSS file
         String cssPath = getClass().getResource("/CSS/coursedetails.css").toExternalForm();
         getStylesheets().add(cssPath);
-        
+
         setPadding(new Insets(20));
         setSpacing(10);
         setAlignment(Pos.TOP_LEFT);
@@ -57,7 +67,7 @@ public class CourseDetailsView extends VBox {
         // PDF Open Button
         openPdfButton = new Button("Open Course PDF");
         openPdfButton.getStyleClass().add("course-details-pdf-button");
-        
+
         // Action section for button
         HBox actionSection = new HBox(openPdfButton);
         actionSection.getStyleClass().add("course-details-action-section");
@@ -69,13 +79,16 @@ public class CourseDetailsView extends VBox {
         // Placeholder for PDF open action (to be implemented)
         openPdfButton.setOnAction(event -> {
             if (pdfPath != null && !pdfPath.isEmpty()) {
-                System.out.println("Chemin du PDF : " + pdfPath);
-                
                 PDFViewer pdfViewer = new PDFViewer();
-                pdfViewer.display(pdfPath, extractedText -> {
-                    System.out.println("Génération automatique d'un quiz...");
-                    quizApp.generateQuizFromPDF(pdfPath);
-                });
+                pdfViewer.display(
+                        pdfPath,
+                        studentId,
+                        courseId,
+                        database,
+                        extractedText -> {
+                            System.out.println("Generating automatic quiz...");
+                            quizApp.generateQuizFromPDF(pdfPath, studentId, courseId, database);
+                        });
             } else {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("PDF Not Available");
@@ -87,13 +100,38 @@ public class CourseDetailsView extends VBox {
 
     }
 
+    public void setPdfPath(String pdfPath) {
+        this.pdfPath = pdfPath;
+    }
+
+    // Setter methods
+    public void setDatabase(MongoDatabase database) {
+        this.database = database;
+        this.courseService = new CourseService(database);
+    }
+
+    public void setStudentId(String studentId) {
+        this.studentId = studentId;
+    }
+
     public void updateCourseDetails(Course course) {
+        this.courseId = course.getId();
+
         titleLabel.setText(course.getTitle());
         descriptionLabel.setText(course.getDescription());
         accessLabel.setText("Access: " + (course.isOpenAccess() ? "Open" : "Restricted"));
-        progressBar.setProgress(course.getProgressPercentage() / 100);
 
+        // Update progress bar with current course progress
+        String courseId = course.getId();
+        double progressValue = (courseService.getStudentCourseProgressPercentage(studentId, courseId) / 100);
+        System.out.println("progresspercentage from coursedetailsview.updatecoursedetails :" + progressValue);
+        System.out.println("Course Details Progress Calculation:");
+        System.out.println("Raw Progress: " + progressValue);
+        progressBar.setProgress(progressValue);
+
+        // Set PDF path for opening
+        this.pdfPath = course.getPdfPath();
         System.out.println("_________________________Course PDF Path: " + course.getPdfPath());
-        setPdfPath(course.getPdfPath());
+
     }
 }

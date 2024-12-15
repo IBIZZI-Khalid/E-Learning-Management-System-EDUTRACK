@@ -217,6 +217,27 @@ public class ReadingTracker {
     }
 
     /**
+     * Get the current reading progress
+     * 
+     * @return Current reading progress details
+     */
+    public Map<String, Object> getReadingProgress() {
+        Map<String, Object> progressDetails = new HashMap<>();
+        
+        // Get completed pages
+        Set<Integer> completedPages = getCompletedPages();
+        
+        // Find the highest completed page (current progress)
+        int currentPage = completedPages.isEmpty() ? 1 : Collections.max(completedPages);
+        
+        progressDetails.put("currentPage", currentPage);
+        progressDetails.put("totalPages", totalPages);
+        progressDetails.put("completedPages", completedPages);
+        
+        return progressDetails;
+    }
+    
+    /**
      * Extract keywords from completed pages
      * 
      * @return Map of page numbers to their extracted keywords

@@ -1,9 +1,8 @@
 package com.example;
 
+import com.example.controllers.LoginPage;
 import com.example.controllers.MongoDBConnector;
 import com.example.controllers.SignupPage;
-// import com.example.controllers.;
-import com.example.controllers.LoginPage;
 import com.example.controllers.StudentDashboard;
 import com.example.controllers.TeacherDashboard;
 import com.mongodb.client.MongoDatabase;
@@ -15,7 +14,7 @@ import javafx.stage.Stage;
 public class MainApp extends Application {
     private Stage primaryStage;
     private StudentDashboard studentDashboard;
-    private TeacherDashboard teacherDashboard; 
+    private TeacherDashboard teacherDashboard;
     private MongoDatabase mongoDatabase;
 
     @Override
@@ -34,6 +33,7 @@ public class MainApp extends Application {
 
         }
     }
+
     public MongoDatabase getMongoDatabase() {
         return mongoDatabase;
     }
@@ -46,7 +46,7 @@ public class MainApp extends Application {
         primaryStage.sizeToScene(); // Automatically adjust window size to fit content
         primaryStage.show();
     }
-    
+
     public void showLoginPage() {
         LoginPage loginPage = new LoginPage(this);
         Scene scene = new Scene(loginPage.getView());
@@ -58,10 +58,9 @@ public class MainApp extends Application {
 
     public void showStudentDashboard(String studentId) {
         studentDashboard = new StudentDashboard(
-            this,
-            mongoDatabase,  // Your MongoDB database instance
-            studentId
-        );        
+                this,
+                mongoDatabase, // Your MongoDB database instance
+                studentId);
         Scene scene = new Scene(studentDashboard.getView(), 1024, 768);
         primaryStage.setScene(scene);
         primaryStage.setTitle("Student Dashboard");
@@ -71,10 +70,9 @@ public class MainApp extends Application {
 
     public void showTeacherDashboard(String teacherEmail) {
         teacherDashboard = new TeacherDashboard(
-            this, 
-            mongoDatabase, 
-            teacherEmail
-        );
+                this,
+                mongoDatabase,
+                teacherEmail);
         Scene scene = new Scene(teacherDashboard.getView(), 1024, 768);
         primaryStage.setScene(scene);
         primaryStage.setTitle("Teacher Dashboard");

@@ -30,46 +30,6 @@ public class CourseService {
         return courseCollection;
     }
 
-    // Add this method to the CourseService class
-    public double getAverageStudentProgressForCourse(String courseId) {
-        try {
-            // Find all students enrolled in this course
-            List<Document> studentsInCourse = new ArrayList<>();
-            studentCollection.find(Filters.in("enrolledCourses", courseId))
-                    .into(studentsInCourse);
-
-            // If no students are enrolled, return 0 progress
-            if (studentsInCourse.isEmpty()) {
-                return 0.0;
-            }
-
-            // Calculate total progress
-            double totalProgress = 0.0;
-            int studentCount = studentsInCourse.size();
-
-            // Iterate through students and sum their progress
-            for (Document student : studentsInCourse) {
-                // Assuming each student document has a courseProgress document or array
-                // You might need to adjust this based on how you store student progress
-                Document courseProgress = (Document) student.get("courseProgress");
-                if (courseProgress != null) {
-                    Double progress = courseProgress.getDouble(courseId);
-                    if (progress != null) {
-                        totalProgress += progress;
-                    }
-                }
-            }
-
-            // Calculate and return average progress
-            return totalProgress / studentCount;
-
-        } catch (Exception e) {
-            // Log the error and return a default progress
-            System.err.println("Error calculating average course progress: " + e.getMessage());
-            return 0.0;
-        }
-    }
-
     // Fetch courses created by a teacher
     public List<Course> getCoursesByTeacher(String teacherEmail) {
         List<Course> courses = new ArrayList<>();
@@ -231,6 +191,73 @@ public class CourseService {
         }
     }
 
+    public double getAverageStudentProgressForCourse(String courseId) {
+        try {
+            // Find all students enrolled in this course
+            List<Document> studentsInCourse = new ArrayList<>();
+            studentCollection.find(Filters.in("enrolledCourses", courseId))
+                    .into(studentsInCourse);
+
+            // If no students are enrolled, return 0 progress
+            if (studentsInCourse.isEmpty()) {
+                return 0.0;
+            }
+
+            // Calculate total progress
+            double totalProgress = 0.0;
+            int studentCount = studentsInCourse.size();
+
+            // Iterate through students and sum their progress
+            for (Document student : studentsInCourse) {
+                // Assuming each student document has a courseProgress document or array
+                // You might need to adjust this based on how you store student progress
+                Document courseProgress = (Document) student.get("courseProgress");
+                if (courseProgress != null) {
+                    Double progress = courseProgress.getDouble(courseId);
+                    if (progress != null) {
+                        totalProgress += progress;
+                    }
+                }
+            }
+
+            // Calculate and return average progress
+            return totalProgress / studentCount;
+
+        } catch (Exception e) {
+            // Log the error and return a default progress
+            System.err.println("Error calculating average course progress: " + e.getMessage());
+            return 0.0;
+        }
+    }
+
+    public void updateCourseProgress(String studentId, String courseId, int currentPage, int totalPages) {
+        try {
+            // Calculate progress percentage
+            double progressPercentage = (double) currentPage / totalPages * 100.0;
+            System.out.println("progressPercentage from courseservice line 241:" + progressPercentage);
+
+            // Update student's course progress in the database
+            studentCollection.updateOne(
+                    Filters.and(
+                            Filters.eq("_id", new ObjectId(studentId)),
+                            Filters.eq("enrolledCourses", courseId)),
+                    Updates.set("courseProgress." + courseId, progressPercentage));
+
+            // Optionally, update the overall course progress (average of all students)
+            double avgProgress = getAverageStudentProgressForCourse(courseId);
+            courseCollection.updateOne(
+                    Filters.eq("_id", new ObjectId(courseId)),
+                    Updates.set("progressPercentage", avgProgress));
+
+            System.out.println("Updated course progress for student: " + studentId +
+                    ", Course: " + courseId +
+                    ", Progress: " + progressPercentage + "%");
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error updating course progress: " + e.getMessage(), e);
+        }
+    }
+
     public Course getCourseById(String courseId) {
         try {
             ObjectId objectId = new ObjectId(courseId);
@@ -255,7 +282,56 @@ public class CourseService {
         }
     }
 
-    // To allow a teacher to manually enroll a student in a course:
+    public double getStudentCourseProgressPercentage(String studentId, String courseId) {
+        try {
+            // Find the student document
+            Document student = studentCollection.find(Filters.eq("_id", new ObjectId(studentId))).first();
+
+            // Verify student exists
+            if (student == null) {
+                throw new RuntimeException("Student not found with ID: " + studentId);
+            }
+
+            // Safely retrieve enrolled courses
+            Object enrolledCoursesObj = student.get("enrolledCourses");
+
+            // Check if enrolledCourses is a list
+            if (!(enrolledCoursesObj instanceof List)) {
+                throw new RuntimeException("Invalid enrolled courses format");
+            }
+
+            // Cast to List and check if the student is enrolled in the course
+            List<String> enrolledCourses = (List<String>) enrolledCoursesObj;
+            if (!enrolledCourses.contains(courseId)) {
+                // Instead of throwing an exception, you might want to handle this differently
+                // For example, return 0.0 or log a warning
+                System.out.println("Student is not enrolled in the specified course");
+                return 0.0;
+            }
+
+            // Extract the courseProgress document
+            Document courseProgress = (Document) student.get("courseProgress");
+
+            // Retrieve the progress for the specific course
+            if (courseProgress != null && courseProgress.containsKey(courseId)) {
+                Object progressValue = courseProgress.get(courseId);
+
+                // Handle both Integer and Double progress values
+                if (progressValue instanceof Integer) {
+                    return ((Integer) progressValue).doubleValue();
+                } else if (progressValue instanceof Double) {
+                    return (Double) progressValue;
+                }
+            }
+
+            // If no progress is found, return 0
+            return 0.0;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error retrieving student course progress: " + e.getMessage(), e);
+        }
+    }
+
     public void addStudentToCourse(String studentId, String courseId) {
         try {
             studentCollection.updateOne(

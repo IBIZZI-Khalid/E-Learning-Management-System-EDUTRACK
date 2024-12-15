@@ -2,9 +2,6 @@ package com.example.controllers;
 
 import com.example.MainApp;
 import com.example.models.User;
-// import com.mongodb.client.MongoCollection;
-// import com.mongodb.client.MongoDatabase;
-// import org.bson.Document;
 
 import javafx.concurrent.Task;
 // import javafx.geometry.Insets;
@@ -30,7 +27,7 @@ public class LoginPage {
     private void createView() {
         view = new VBox(15);
         view.getStyleClass().addAll("auth-container", "auth-background-animated");
-        
+
         // Ensure computed sizing for responsiveness
         view.setPrefWidth(Region.USE_COMPUTED_SIZE);
         view.setPrefHeight(Region.USE_COMPUTED_SIZE);

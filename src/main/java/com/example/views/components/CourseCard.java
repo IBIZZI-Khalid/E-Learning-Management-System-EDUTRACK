@@ -19,6 +19,8 @@ public class CourseCard extends VBox {
         descriptionLabel.setWrapText(true);
 
         ProgressBar progressBar = new ProgressBar(progress/100.0);
+        System.out.println("progressbar from coursecard in line 22:"+progressBar);
+
         progressBar.setPrefWidth(200);
 
         this.courseId = courseId; 

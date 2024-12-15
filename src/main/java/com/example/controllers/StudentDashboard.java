@@ -41,6 +41,11 @@ public class StudentDashboard {
         this.studentId = studentId;
         this.courseService = new CourseService(database);
         this.announcementService = new AnnouncementService(database);
+
+        // courseDetailsView.setDatabase(mainApp.getDatabase());
+        // courseDetailsView.setStudentId(studentId);
+        // courseDetailsView.updateCourseDetails(selectedCourse);
+
         createView();
     }
 
@@ -132,7 +137,14 @@ public class StudentDashboard {
                     Label courseTitle = new Label(course.getTitle());
                     courseTitle.getStyleClass().add("welcome-card-title");
 
-                    ProgressBar progressBar = new ProgressBar(course.getProgressPercentage() / 100.0);
+                    // ProgressBar progressBar = new ProgressBar(course.getProgressPercentage() /
+                    // 100.0);
+                    ProgressBar progressBar = new ProgressBar(
+                            courseService.getStudentCourseProgressPercentage(studentId, course.getId()) / 100.0);
+
+                    System.out.println(
+                            "________________________________________progressbar from studentdashboard line 141:"
+                                    + progressBar);
                     progressBar.getStyleClass().add("welcome-progress-bar");
 
                     Label progressLabel = new Label(String.format("Progress: %.1f%%", course.getProgressPercentage()));
@@ -331,16 +343,17 @@ public class StudentDashboard {
         alert.showAndWait();
     }
 
-    private CourseCard createCourseCard(String title, String description, double progress, String  courseId) {
+    private CourseCard createCourseCard(String title, String description, double progress, String courseId) {
         CourseCard courseCard = new CourseCard(title, description, progress, courseId);
         // Add an event handler to initialize progress when the card is clicked
         courseCard.setOnMouseClicked(event -> {
             try {
                 // Initialize course progress when card is clicked
-                courseService.initializeCourseProgress(studentId, courseCard.getCourseId()); // courseId howa nit
+                // courseService.initializeCourseProgress(studentId, courseCard.getCourseId());
+                // // courseId howa nit
 
                 Course selectedCourse = courseService.getCourseById(courseCard.getCourseId());
-                CourseDetailsView courseDetailsView = new CourseDetailsView();
+                CourseDetailsView courseDetailsView = new CourseDetailsView(mainApp.getMongoDatabase(), studentId);
                 courseDetailsView.updateCourseDetails(selectedCourse); // courseCard.getCourseId()
 
                 // Clear previous content and add the new course details view
@@ -361,17 +374,20 @@ public class StudentDashboard {
     private void showChatsView() {
         try {
             // Determine the current user's role and username
-            String currentUsername = courseService.getStudentDetails(studentId).getString("name"); // You'll need to implement this method
-            String currentRole = courseService.getStudentDetails(studentId).getString("type"); // You'll need to implement this method
+            String currentUsername = courseService.getStudentDetails(studentId).getString("name"); // You'll need to
+                                                                                                   // implement this
+                                                                                                   // method
+            String currentRole = courseService.getStudentDetails(studentId).getString("type"); // You'll need to
+                                                                                               // implement this method
 
             // Create an instance of ChatApplication with the current user's details
             ChatApplication chatApp = new ChatApplication(currentUsername, currentRole);
 
             // Create a new stage for the chat application
-            Stage chatStage = new Stage ();
+            Stage chatStage = new Stage();
             chatApp.start(chatStage);
         } catch (Exception e) {
-            System.out.println ("error");
+            System.out.println("error");
         }
     }
 

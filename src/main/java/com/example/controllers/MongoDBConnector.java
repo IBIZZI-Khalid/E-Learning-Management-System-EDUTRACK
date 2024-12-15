@@ -1,8 +1,5 @@
 package com.example.controllers;
 
-// import com.example.models.Student;
-// import com.example.models.Student;
-// import com.example.models.Teacher;
 import com.example.models.User;
 import com.mongodb.client.*;
 import com.mongodb.client.result.UpdateResult;
@@ -56,9 +53,10 @@ public class MongoDBConnector {
         return teachersCollection;
     }
 
-    public  MongoCollection<Document> getCoursCollection() {
+    public MongoCollection<Document> getCoursCollection() {
         return coursCollection;
     }
+
     public static void savePrivateMessage(String sender, String recipient, String message) {
         if (privateMessagesCollection == null) {
             System.out.println("MongoDB private messages collection not initialized");
@@ -79,6 +77,7 @@ public class MongoDBConnector {
             System.out.println("Error saving private message: " + e.getMessage());
         }
     }
+
     public static void saveGroupMessage(String sender, String message) {
         if (groupMessagesCollection == null) {
             System.out.println("MongoDB group messages collection not initialized");
@@ -98,6 +97,7 @@ public class MongoDBConnector {
             System.out.println("Error saving group message: " + e.getMessage());
         }
     }
+
     // User registration method with role-based collection insertion
     public static void registerUser(User user, String role) {
         String salt = BCrypt.gensalt(12);

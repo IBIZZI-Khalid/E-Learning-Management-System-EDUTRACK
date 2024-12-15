@@ -21,14 +21,14 @@ public class AnnouncementService {
     }
 
     public void postAnnouncement(String Title, String announcement, String teacherEmail) {
-        try{
+        try {
             Document announcementDoc = new Document()
-                .append("title", Title)
-                .append("announcement", announcement)
-                .append("teacherEmail", teacherEmail)
-                .append("timestamp", System.currentTimeMillis());
+                    .append("title", Title)
+                    .append("announcement", announcement)
+                    .append("teacherEmail", teacherEmail)
+                    .append("timestamp", System.currentTimeMillis());
             announcementCollection.insertOne(announcementDoc);
-        }catch(Exception e){
+        } catch (Exception e) {
             throw new RuntimeException("Error in posting announcement method: " + e.getMessage(), e);
         }
     }
@@ -37,7 +37,7 @@ public class AnnouncementService {
     public List<Announcement> getAllAnnouncements() {
         List<Announcement> announcements = new ArrayList<>();
         try (
-            MongoCursor<Document> cursor = announcementCollection.find().iterator()) {
+                MongoCursor<Document> cursor = announcementCollection.find().iterator()) {
             while (cursor.hasNext()) {
                 Document doc = cursor.next();
                 Announcement announcement = mapDocumentToAnnouncement(doc);
@@ -58,8 +58,8 @@ public class AnnouncementService {
         }
     }
 
-      // Fetch general announcements
-      public List<Announcement> getGeneralAnnouncements() {
+    // Fetch general announcements
+    public List<Announcement> getGeneralAnnouncements() {
         List<Announcement> announcements = new ArrayList<>();
         try (MongoCursor<Document> cursor = announcementCollection.find(eq("courseId", null)).iterator()) {
             while (cursor.hasNext()) {

@@ -134,7 +134,9 @@ public class AddCourseForm extends Stage {
                 }
 
                 // Create the course and display success message
-                String courseId = courseService.createCourse(title, subtitle, teacherEmail, new String[]{pdfPath[0]}, isOpenAccess);                showSuccess("Course Created", "Course has been successfully created with ID: " + courseId);
+                String courseId = courseService.createCourse(title, subtitle, teacherEmail, new String[] { pdfPath[0] },
+                        isOpenAccess);
+                showSuccess("Course Created", "Course has been successfully created with ID: " + courseId);
             } catch (RuntimeException ex) {
                 showAlert("Error creating course", ex.getMessage());
             }
@@ -150,7 +152,7 @@ public class AddCourseForm extends Stage {
                 subtitleLabel, subtitleField,
                 dateLabel, dateField,
                 pdfLabel, pdfButton, pdfPathLabel,
-                buttonBox,openAccessCheckbox);
+                buttonBox, openAccessCheckbox);
 
         // Create full-screen scene
         Scene scene = new Scene(mainLayout);
