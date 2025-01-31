@@ -13,8 +13,10 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import org.bson.Document;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ChatApplication extends Application {
@@ -25,8 +27,6 @@ public class ChatApplication extends Application {
     private String currentUser;
     private String currentRole;
 
-
-
     public ChatApplication(String username, String role) {
         this.currentUser = username;
         this.currentRole = role;
@@ -35,20 +35,21 @@ public class ChatApplication extends Application {
     @Override
     public void start(Stage primaryStage) {
         try {
-            primaryStage.setTitle("Chat Éducatif - " + currentUser);
+            primaryStage.setTitle("EDU-TRACK Chat , Welcome " + currentUser);
             BorderPane mainLayout = createMainLayout();
             Scene scene = new Scene(mainLayout, 1000, 600);
             primaryStage.setScene(scene);
             primaryStage.setOnCloseRequest(e -> {
-                Platform.exit();
-                System.exit(0);
+                // Platform.exit();
+                // System.exit(0);
             });
             primaryStage.show();
 
-            MongoDBConnector.connect( "mongodb://localhost:27017" ); // Connexion à la base de données
-            loadUsers();        // Chargement des utilisateurs
-            loadMessages();     // Chargement des messages existants
+            MongoDBConnector.connect("mongodb://localhost:27017");
+            // loadUsers();
+            loadMessages();
         } catch (Exception e) {
+            System.err.println(e.getMessage());
             e.printStackTrace();
             showErrorDialog("Erreur de démarrage", "Impossible de lancer l'application", e.getMessage());
         }
@@ -88,7 +89,14 @@ public class ChatApplication extends Application {
     }
 
     private VBox createUserListContainer() {
-        Label userListLabel = new Label("Professeurs");
+        String chatTitle;
+        if (currentRole.equals("Teacher")) {
+            chatTitle = "Students";
+        } else {
+            chatTitle = "Professors";
+        }
+    
+        Label userListLabel = new Label(chatTitle);
         userListLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
         Rectangle blueRectangle = new Rectangle(150, 10);
@@ -108,6 +116,9 @@ public class ChatApplication extends Application {
         ListView<String> userList = new ListView<>();
         userList.setPrefWidth(150);
 
+        List<String> users = getUsersBasedOnCurrentUserType();
+        userList.getItems().addAll(users);
+
         userList.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
                 String selectedUser = userList.getSelectionModel().getSelectedItem();
@@ -118,6 +129,44 @@ public class ChatApplication extends Application {
         });
 
         return userList;
+    }
+
+    private List<String> getUsersBasedOnCurrentUserType() {
+        List<String> users = new ArrayList<>();
+        if (currentRole.equals("Teacher")) {
+            users = getTeacherStudents(currentUser);
+        } else {
+            users = getStudentTeachers(currentUser);
+        }
+        return users;
+    }
+
+    private List<String> getTeacherStudents(String teacher) {
+        List<String> students = new ArrayList<>();
+        MongoCollection<Document> SCollection = MongoDBConnector.getStudentsCollection();
+        if (SCollection != null) {
+            MongoCursor<Document> cursor = SCollection.find().iterator();
+            while (cursor.hasNext()) {
+                Document doc = cursor.next();
+                String fullname = doc.getString("name");
+                students.add(fullname);
+            }
+        }
+        return students;
+    }
+
+    private List<String> getStudentTeachers(String student) {
+        List<String> teachers = new ArrayList<>();
+        MongoCollection<Document> TCollection = MongoDBConnector.getTeachersCollection();
+        if (TCollection != null) {
+            MongoCursor<Document> cursor = TCollection.find().iterator();
+            while (cursor.hasNext()) {
+                Document doc = cursor.next();
+                String fullname = doc.getString("name");
+                teachers.add(fullname);
+            }
+        }
+        return teachers;
     }
 
     private HBox createInputArea() {
@@ -165,7 +214,7 @@ public class ChatApplication extends Application {
             Tab selectedTab = chatTabPane.getSelectionModel().getSelectedItem();
             TextArea targetChatArea;
 
-            if (selectedTab.getText().equals("Chat Général")) {
+            if (selectedTab.getText().equals("General Chat")) {
                 targetChatArea = (TextArea) selectedTab.getContent();
                 sendGroupMessage(message);
             } else {
@@ -173,7 +222,7 @@ public class ChatApplication extends Application {
                 sendPrivateMessage(selectedTab.getText(), message);
             }
 
-            targetChatArea.appendText("Moi: " + message + "\n");
+            targetChatArea.appendText("Me: " + message + "\n");
             messageField.clear();
         }
     }
@@ -185,26 +234,6 @@ public class ChatApplication extends Application {
     private void sendPrivateMessage(String recipient, String message) {
         MongoDBConnector.savePrivateMessage(currentUser, recipient, message);
     }
-
-    private void loadUsers() {
-        MongoCollection<Document> usersCollection = MongoDBConnector.getTeachersCollection();
-        if (usersCollection != null) {
-            MongoCursor<Document> cursor = usersCollection.find().iterator();
-            while (cursor.hasNext()) {
-                Document doc = cursor.next();
-                String fullname = doc.getString("name");  // Get the name of the teacher
-                String userType = doc.getString("type");  // Get the user type
-
-                // Check if the current role matches the user type or if it's "teachers"
-                if (currentRole.equals("teachers") || userType.equals("Teacher")) {
-                    userList.getItems().add(fullname);
-                }
-            }
-        } else {
-            showErrorDialog("Erreur de connexion", "Impossible de charger les utilisateurs", "La collection des utilisateurs est null.");
-        }
-    }
-
 
     private void loadMessages() {
         MongoCursor<Document> groupMessagesCursor = MongoDBConnector.groupMessagesCollection.find().iterator();
@@ -230,8 +259,8 @@ public class ChatApplication extends Application {
             MongoCursor<Document> privateMessagesCursor = MongoDBConnector.privateMessagesCollection
                     .find(new Document("$or", Arrays.asList(
                             new Document("sender", currentUser).append("recipient", username),
-                            new Document("sender", username).append("recipient", currentUser)
-                    ))).iterator();
+                            new Document("sender", username).append("recipient", currentUser))))
+                    .iterator();
 
             while (privateMessagesCursor.hasNext()) {
                 Document doc = privateMessagesCursor.next();

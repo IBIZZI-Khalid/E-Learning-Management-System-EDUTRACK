@@ -374,11 +374,8 @@ public class StudentDashboard {
     private void showChatsView() {
         try {
             // Determine the current user's role and username
-            String currentUsername = courseService.getStudentDetails(studentId).getString("name"); // You'll need to
-                                                                                                   // implement this
-                                                                                                   // method
-            String currentRole = courseService.getStudentDetails(studentId).getString("type"); // You'll need to
-                                                                                               // implement this method
+            String currentUsername = courseService.getStudentDetails(studentId).getString("name"); 
+            String currentRole = courseService.getStudentDetails(studentId).getString("type");  
 
             // Create an instance of ChatApplication with the current user's details
             ChatApplication chatApp = new ChatApplication(currentUsername, currentRole);

@@ -20,6 +20,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 import java.util.List;
 
@@ -105,6 +106,7 @@ public class TeacherDashboard {
 
         Button welcomeBtn = new Button("Home");
         Button coursesBtn = new Button("My Courses");
+        Button chatsBtn = new Button("Chats");
         Button manageStudentsBtn = new Button("Manage Students");
         Button announcementsBtn = new Button("Announcements");
         Button addStudentBtn = new Button("Add A Student");
@@ -112,6 +114,8 @@ public class TeacherDashboard {
 
         welcomeBtn.setMaxWidth(Double.MAX_VALUE);
         coursesBtn.setMaxWidth(Double.MAX_VALUE);
+        chatsBtn.setMaxWidth(Double.MAX_VALUE);
+
         manageStudentsBtn.setMaxWidth(Double.MAX_VALUE);
         announcementsBtn.setMaxWidth(Double.MAX_VALUE);
         addStudentBtn.setMaxWidth(Double.MAX_VALUE);
@@ -119,6 +123,7 @@ public class TeacherDashboard {
 
         welcomeBtn.setOnAction(e -> showWelcomeView());
         coursesBtn.setOnAction(e -> showCoursesView());
+        chatsBtn.setOnAction(e -> showChatsView());
         manageStudentsBtn.setOnAction(e -> showManageStudentsView());
         announcementsBtn.setOnAction(e -> showAnnouncementsView());
         addStudentBtn.setOnAction(e -> addStudentToCourseView());
@@ -129,6 +134,7 @@ public class TeacherDashboard {
                 new Separator(),
                 welcomeBtn,
                 coursesBtn,
+                chatsBtn,
                 manageStudentsBtn,
                 announcementsBtn,
                 addStudentBtn,
@@ -377,54 +383,6 @@ public class TeacherDashboard {
         }
     }
 
-    // private void showCreateCourseView() {
-    // VBox createCourseView = new VBox(10);
-    // createCourseView.setPadding(new Insets(20));
-
-    // TextField titleField = new TextField();
-    // titleField.setPromptText("Course Title");
-
-    // TextArea descriptionField = new TextArea();
-    // descriptionField.setPromptText("Course Description");
-
-    // // Add checkbox for "Open Access"
-    // CheckBox openAccessCheckbox = new CheckBox("Make this course open to all
-    // students");
-    // openAccessCheckbox.setSelected(false); // Default to restricted
-
-    // Button saveBtn = new Button("Save Course");
-    // saveBtn.setOnAction(e -> {
-    // try {
-    // String title = titleField.getText();
-    // String description = descriptionField.getText();
-    // boolean isOpenAccess = openAccessCheckbox.isSelected();
-
-    // if (title.isEmpty() || description.isEmpty()) {
-    // showError("Validation Error", "Title and description are required");
-    // return;
-    // }
-
-    // String courseId = courseService.createCourse(title, description,
-    // teacherEmail, isOpenAccess);
-    // showSuccess("Course Created", "Course has been successfully created with ID:
-    // " + courseId);
-    // showCoursesView(); // Refresh courses view
-    // } catch (RuntimeException ex) {
-    // showError("Error creating course", ex.getMessage());
-    // }
-    // });
-
-    // createCourseView.getChildren().addAll(
-    // new Label("Create New Course"),
-    // titleField,
-    // descriptionField,
-    // openAccessCheckbox,
-    // saveBtn);
-
-    // contentArea.getChildren().clear();
-    // contentArea.getChildren().add(createCourseView);
-    // }
-
     private void showAnnouncementsView() {
         VBox mainView = new VBox(20); // Main container for the entire announcements view
         mainView.setPadding(new Insets(20));
@@ -525,6 +483,23 @@ public class TeacherDashboard {
         }
     }
 
+    private void showChatsView() {
+        try {
+            // Determine the current user's role and username
+            String currentUsername = courseService.getTeacherDetails(teacherEmail).getString("name"); 
+            String currentRole = courseService.getTeacherDetails(teacherEmail).getString("type");  
+
+            // Create an instance of ChatApplication with the current user's details
+            ChatApplication chatApp = new ChatApplication(currentUsername, currentRole);
+
+            // Create a new stage for the chat application
+            Stage chatStage = new Stage();
+            chatApp.start(chatStage);
+        } catch (Exception e) {
+            System.out.println("error");
+        }
+    }
+
     private void applyStyling() {
         view.getStyleClass().add("dashboard");
         sidebar.getStyleClass().add("sidebar");
@@ -537,7 +512,6 @@ public class TeacherDashboard {
         return view;
     }
 
-    // Helper methods for showing dialogs
     private void showError(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
