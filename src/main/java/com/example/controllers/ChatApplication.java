@@ -102,7 +102,7 @@ public class ChatApplication extends Application {
     }
 
     private Tab createGroupChatTab() {
-        Tab groupChatTab = new Tab("Chat Général");
+        Tab groupChatTab = new Tab("General Chat");
         groupChatTab.setClosable(false);
 
         TextArea groupChatArea = new TextArea();
@@ -223,12 +223,12 @@ public class ChatApplication extends Application {
 
     private HBox createInputArea() {
         messageField = new TextArea();
-        messageField.setPromptText("Écrivez votre message ici...");
+        messageField.setPromptText("Write Your Message Here ...");
         messageField.setPrefHeight(80);
         messageField.setWrapText(true);
         messageField.setStyle("-fx-border-color: #0078d7; -fx-border-radius: 5px; -fx-padding: 10px;");
 
-        Button sendButton = new Button("Envoyer");
+        Button sendButton = new Button("Send");
         sendButton.setOnAction(e -> sendMessage());
         sendButton.setStyle("-fx-background-color: #0078d7; -fx-text-fill: white; -fx-font-weight: bold;");
 

@@ -90,13 +90,9 @@ public class MongoDBConnector {
             System.out.println("MongoDB group messages collection not initialized");
             return;
         }
-
-        // Création du document pour le message
         Document messageDocument = new Document("sender", sender)
                 .append("message", message)
                 .append("timestamp", LocalDateTime.now().toString());
-
-        // Tentative d'insertion du message
         try {
             groupMessagesCollection.insertOne(messageDocument);
             System.out.println("Group message saved successfully!");
@@ -105,7 +101,6 @@ public class MongoDBConnector {
         }
     }
 
-    // User registration method with role-based collection insertion
     public static void registerUser(User user, String role) {
         String salt = BCrypt.gensalt(12);
         String hashedPassword = BCrypt.hashpw(user.getPassword(), salt);
@@ -118,7 +113,6 @@ public class MongoDBConnector {
                 .append("type", role)
                 .append("password", hashedPassword);
 
-        // Choose collection based on role
         if ("Student".equals(role)) {
 
             studentsCollection.insertOne(userDocument);
@@ -130,8 +124,7 @@ public class MongoDBConnector {
             throw new IllegalArgumentException("Invalid user role");
         }
     }
-
-    // Login verification with role-based collection checking
+    
     public static boolean verifyLogin(String email, String password, String role) {
         MongoCollection<Document> collection = "Student".equals(role) ? studentsCollection : teachersCollection;
 
