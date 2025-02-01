@@ -26,7 +26,8 @@ import javafx.scene.layout.VBox;
 public class StudentDashboard {
 
     private MainApp mainApp;
-    private final String studentId; // Store student ID
+    private MongoDatabase database;
+    private final String studentId; 
     private BorderPane view;
     private VBox sidebar;
     private StackPane contentArea;
@@ -38,15 +39,15 @@ public class StudentDashboard {
             throw new IllegalArgumentException("Database connection is required error in StudentDashboard line31");
         }
         this.mainApp = mainApp;
+        this.database = database;
         this.studentId = studentId;
         this.courseService = new CourseService(database);
         this.announcementService = new AnnouncementService(database);
 
-        // courseDetailsView.setDatabase(mainApp.getDatabase());
-        // courseDetailsView.setStudentId(studentId);
-        // courseDetailsView.updateCourseDetails(selectedCourse);
-
         createView();
+    }
+    public MongoDatabase getDatabase() {
+        return database;
     }
 
     private void createView() {
@@ -353,7 +354,7 @@ public class StudentDashboard {
                 // // courseId howa nit
 
                 Course selectedCourse = courseService.getCourseById(courseCard.getCourseId());
-                CourseDetailsView courseDetailsView = new CourseDetailsView(mainApp.getMongoDatabase(), studentId);
+                CourseDetailsView courseDetailsView = new CourseDetailsView(database, studentId);
                 courseDetailsView.updateCourseDetails(selectedCourse); // courseCard.getCourseId()
 
                 // Clear previous content and add the new course details view
@@ -373,12 +374,16 @@ public class StudentDashboard {
 
     private void showChatsView() {
         try {
-            // Determine the current user's role and username
-            String currentUsername = courseService.getStudentDetails(studentId).getString("name"); 
-            String currentRole = courseService.getStudentDetails(studentId).getString("type");  
+            Document studentDetails = courseService.getStudentDetails(studentId);
+            String currentUsername = studentDetails.getString("name");
+            String currentRole = studentDetails.getString("type");
 
-            // Create an instance of ChatApplication with the current user's details
-            ChatApplication chatApp = new ChatApplication(currentUsername, currentRole);
+            ChatApplication chatApp = ChatApplication.createForStudent(
+                currentUsername,
+                currentRole,
+                studentId,
+                database
+            );
 
             // Create a new stage for the chat application
             Stage chatStage = new Stage();

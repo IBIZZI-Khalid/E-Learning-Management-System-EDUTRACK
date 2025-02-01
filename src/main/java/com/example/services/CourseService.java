@@ -2,6 +2,7 @@ package com.example.services;
 
 import com.example.models.Course;
 import com.example.models.Student;
+import com.example.models.Teacher;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
@@ -93,6 +94,26 @@ public class CourseService {
         }
     }
 
+    public List<Document> getTeachersForStudentsEnroledCourses(String studentId) {
+        List<Document> teachers = new ArrayList<>();
+
+        Document student = studentCollection.find(Filters.eq("_id", new ObjectId(studentId))).first();
+        if (student != null) {
+            List<String> enrolledCourses = student.getList("enrolledCourses", String.class);
+            for (String courseId : enrolledCourses) {
+                Document course = courseCollection.find(Filters.eq("_id", new ObjectId(courseId))).first();
+                if (course != null) {
+                    String teacherEmail = course.getString("teacherEmail");
+                    Document teacher = teacherCollection.find(Filters.eq("email", teacherEmail)).first();
+                    if (teacher != null) {
+                        teachers.add(teacher);
+                    }
+                }
+            }
+        }
+        return teachers;
+    }
+
     public String createCourse(String title, String description, String teacherEmail, String PDFpath[],
             boolean isOpenAccess) {
         try {
@@ -110,8 +131,6 @@ public class CourseService {
             throw new RuntimeException("Error creating course: " + e.getMessage(), e);
         }
     }
-
-    // Post an announcement
 
     public List<Course> getCoursesForStudent(String studentId) {
         List<Course> courses = new ArrayList<>();

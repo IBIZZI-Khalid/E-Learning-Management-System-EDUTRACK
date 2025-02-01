@@ -485,18 +485,21 @@ public class TeacherDashboard {
 
     private void showChatsView() {
         try {
-            // Determine the current user's role and username
-            String currentUsername = courseService.getTeacherDetails(teacherEmail).getString("name"); 
-            String currentRole = courseService.getTeacherDetails(teacherEmail).getString("type");  
+            Document teacherDetails = courseService.getTeacherDetails(teacherEmail);
+            String currentUsername = teacherDetails.getString("name"); 
+            String currentRole = teacherDetails.getString("type");  
 
-            // Create an instance of ChatApplication with the current user's details
-            ChatApplication chatApp = new ChatApplication(currentUsername, currentRole);
+            ChatApplication chatApp = ChatApplication.createForTeacher(
+                currentUsername,
+                currentRole,
+                teacherEmail,
+                database
+            );
 
-            // Create a new stage for the chat application
             Stage chatStage = new Stage();
             chatApp.start(chatStage);
         } catch (Exception e) {
-            System.out.println("error");
+            showError("Chat Error", "Failed to open chat: " + e.getMessage());
         }
     }
 

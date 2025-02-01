@@ -59,7 +59,7 @@ public class MainApp extends Application {
     public void showStudentDashboard(String studentId) {
         studentDashboard = new StudentDashboard(
                 this,
-                mongoDatabase, // Your MongoDB database instance
+                mongoDatabase,
                 studentId);
         Scene scene = new Scene(studentDashboard.getView(), 1024, 768);
         primaryStage.setScene(scene);

@@ -1,9 +1,12 @@
 package com.example.controllers;
 
-import com.mongodb.client.MongoCollection;
+import com.example.models.Course;
+import com.example.models.Student;
+import com.example.services.CourseService;
 import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
+
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -16,20 +19,48 @@ import org.bson.Document;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ChatApplication extends Application {
     private TabPane chatTabPane;
     private ListView<String> userList;
     private Map<String, TextArea> privateChatAreas = new HashMap<>();
-    private TextArea messageField; // Agrandir TextArea
+    private TextArea messageField;
     private String currentUser;
     private String currentRole;
+    private String teacherEmail;
+    private String studentId;
+    private CourseService courseService; 
 
-    public ChatApplication(String username, String role) {
+    public enum UserType {
+        TEACHER,
+        STUDENT
+    }
+
+    public ChatApplication(String username, String role, String identifier, UserType userType, MongoDatabase database) {
         this.currentUser = username;
         this.currentRole = role;
+        this.courseService = new CourseService(database); 
+        
+        if (userType == UserType.TEACHER) {
+            this.teacherEmail = identifier;
+            this.studentId = null;
+        } else {
+            this.studentId = identifier;
+            this.teacherEmail = null;
+        }
+    }
+
+    public static ChatApplication createForTeacher(String username, String role, String teacherEmail ,MongoDatabase database) {
+        return new ChatApplication(username, role, teacherEmail, UserType.TEACHER , database);
+    }
+
+    public static ChatApplication createForStudent(String username, String role, String studentId,MongoDatabase database) {
+        return new ChatApplication(username, role, studentId, UserType.STUDENT ,database);
     }
 
     @Override
@@ -39,15 +70,10 @@ public class ChatApplication extends Application {
             BorderPane mainLayout = createMainLayout();
             Scene scene = new Scene(mainLayout, 1000, 600);
             primaryStage.setScene(scene);
-            primaryStage.setOnCloseRequest(e -> {
-                // Platform.exit();
-                // System.exit(0);
-            });
             primaryStage.show();
-
             MongoDBConnector.connect("mongodb://localhost:27017");
-            // loadUsers();
             loadMessages();
+
         } catch (Exception e) {
             System.err.println(e.getMessage());
             e.printStackTrace();
@@ -132,41 +158,67 @@ public class ChatApplication extends Application {
     }
 
     private List<String> getUsersBasedOnCurrentUserType() {
-        List<String> users = new ArrayList<>();
-        if (currentRole.equals("Teacher")) {
-            users = getTeacherStudents(currentUser);
-        } else {
-            users = getStudentTeachers(currentUser);
+        try {
+            if (currentRole.equals("Teacher")) {
+                return getTeacherStudents();
+            } else {
+                return getStudentTeachers();
+            }
+        } catch (Exception e) {
+            System.err.println("Error fetching users: " + e.getMessage());
+            return new ArrayList<>(); // Return empty list on error
         }
-        return users;
     }
 
-    private List<String> getTeacherStudents(String teacher) {
-        List<String> students = new ArrayList<>();
-        MongoCollection<Document> SCollection = MongoDBConnector.getStudentsCollection();
-        if (SCollection != null) {
-            MongoCursor<Document> cursor = SCollection.find().iterator();
-            while (cursor.hasNext()) {
-                Document doc = cursor.next();
-                String fullname = doc.getString("name");
-                students.add(fullname);
-            }
+    private List<String> getTeacherStudents() {
+        // logic to get all the students :
+            // List<String> students = new ArrayList<>();
+            // MongoCollection<Document> SCollection = MongoDBConnector.getStudentsCollection();
+            // if (SCollection != null) {
+            //     MongoCursor<Document> cursor = SCollection.find().iterator();
+            //     while (cursor.hasNext()) {
+            //         Document doc = cursor.next();
+            //         String fullname = doc.getString("name");
+            //         students.add(fullname);
+            //     }
+            // }
+            // return students;
+        
+        // logic to get students for this teacher :
+         try {
+            // Using CourseService to get students for this teacher
+            List<Student> students = courseService.getStudentsForTeacherCourses(teacherEmail);
+            
+            // Convert Student objects to student names for display
+            return students.stream()
+                         .map(Student::getName)
+                         .collect(Collectors.toList());
+                         
+        } catch (Exception e) {
+            System.err.println("Error fetching teacher's students: " + e.getMessage());
+            return new ArrayList<>();
         }
-        return students;
     }
 
-    private List<String> getStudentTeachers(String student) {
-        List<String> teachers = new ArrayList<>();
-        MongoCollection<Document> TCollection = MongoDBConnector.getTeachersCollection();
-        if (TCollection != null) {
-            MongoCursor<Document> cursor = TCollection.find().iterator();
-            while (cursor.hasNext()) {
-                Document doc = cursor.next();
-                String fullname = doc.getString("name");
-                teachers.add(fullname);
-            }
+    private List<String> getStudentTeachers() {
+        try {
+            System.out.println("Fetching teachers for student ID: " + studentId);
+            List<Document> teacherDocs = courseService.getTeachersForStudentsEnroledCourses(studentId);
+            System.out.println("Found " + teacherDocs.size() + " teachers");
+            List<String> teacherNames = teacherDocs.stream()
+            .map(doc -> doc.getString("name"))
+            .distinct()
+            .collect(Collectors.toList());
+            
+            System.out.println("Processed teacher names: " + String.join(", ", teacherNames));
+            return teacherNames;
+                
+        } catch (Exception e) {
+            System.err.println("Error fetching student's teachers: " + e.getMessage());
+            e.printStackTrace(); // Add stack trace for better debugging
+
+            return new ArrayList<>();
         }
-        return teachers;
     }
 
     private HBox createInputArea() {
